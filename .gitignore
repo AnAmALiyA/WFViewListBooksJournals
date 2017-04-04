@@ -45,3 +45,12 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+
+bin/
+MVP.Entities/bin/
+MVP.Forms/bin/
+MVP.Models/bin/
+MVP.Presenters/bin/
+MVP.Views/bin/
+obj/
+packages/

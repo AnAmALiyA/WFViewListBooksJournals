@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace WFViewListBooksJournals.Views.Interfaces
 {
-    public interface IAddAuthorForm
+    public interface IAuthorForm
     {
+        void InitializeComponentAuthorForm();
+        void InitializeComponentAuthorForm(Dictionary<string, bool> nationality);
     }
 }

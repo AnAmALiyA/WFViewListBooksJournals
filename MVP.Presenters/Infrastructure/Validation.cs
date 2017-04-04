@@ -1,77 +1,69 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
-using WFViewListBooksJournals.Models.Infrastructure;
 
 namespace WFViewListBooksJournals.Presenters.Infrastructure
 {
     public class Validation
     {
-        public bool CheckEmptyField(List<string> listPublications, string publication, string author, string namePublication, string pages, string title, string location)
+        public bool CheckEmptyFields(string author, string namePublication, string pages)
         {
-            if (listPublications[0] == publication)
+            if (author == string.Empty || namePublication == string.Empty || pages == string.Empty)
             {
-                if (author == "" || namePublication == "" || pages == "")
-                {
-                    return true;
-                }
-            }
-
-            if (listPublications[1] == publication)
-            {
-                if (author == "" || namePublication == "" || pages == "" || title == "" || location == "")
-                {
-                    return true;
-                }
-            }
-
-            if (listPublications[2] == publication)
-            {
-                if (author == "" || namePublication == "" || title == "" || location == "")
-                {
-                    return true;
-                }
+                return true;
             }
             return false;
         }
 
-        public bool NullField(params string[] list)
+        public bool CheckEmptyFields(string author, string namePublication, string numberIssue, string title, string location)
         {
-            for (int i = 0; i < list.Length; i++)
+            if (author == string.Empty || namePublication == string.Empty || numberIssue == string.Empty || title == string.Empty || location == string.Empty)
             {
-                if (list[i] =="")
-                {
-                    return true;
-                }
+                return true;
             }
             return false;
         }
 
-        public bool CheckCorrectnessData(List<string> listPublications, string publication, string author, string namePublication, string pages, string title, string location)
+        public bool CheckEmptyFields(string author, string namePublication, string title, string location)
         {
-            if (listPublications[0] == publication)
+            if (author == string.Empty || namePublication == string.Empty || title == string.Empty || location == string.Empty)
             {
-                if(!CheckCorrectnessAuthors(author) || !CheckCorrectnessPages(pages) || !ExistNumberText(namePublication))
-                {
-                    return true;
-                }
+                return true;
             }
+            return false;
+        }
 
-            if (listPublications[1] == publication)
+        public bool NullField(string firstName, string secondName, string lastName, string nationality)
+        {
+            if (firstName == string.Empty || secondName == string.Empty || lastName == string.Empty || nationality == string.Empty)
             {
-                if (!CheckCorrectnessAuthors(author) || !ExistNumberText(namePublication) || !ExistNumberText(pages) || !ExistNumberText(title) || !CheckCorrectnessLocation(location))
-                {
-                    return true;
-                }
+                return true;
             }
+            return false;
+        }
 
-            if (listPublications[2] == publication)
+        public bool ValidationData(string namePublication, DateTime date, string pages)
+        {
+            if (!CheckCorrectnessDate(date) || !CheckCorrectnessPages(pages) || !ExistNumberText(namePublication))
             {
-                if (!CheckCorrectnessAuthors(author) || !ExistNumberText(namePublication) || !ExistNumberText(title) || !CheckCorrectnessLocation(location))
-                {
-                    return true;
-                }
+                return true;
+            }
+            return false;
+        }
+
+        public bool ValidationData(string namePublication, string numberIssue, DateTime date, string title, string location)
+        {
+            if (!CheckCorrectnessDate(date) || !ExistNumberText(namePublication) || !ExistNumberText(numberIssue) || !ExistNumberText(title) || !CheckCorrectnessLocation(location))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool ValidationData(string namePublication, DateTime date, string title, string location)
+        {
+            if (!CheckCorrectnessDate(date) || !ExistNumberText(namePublication) || !ExistNumberText(title) || !CheckCorrectnessLocation(location))
+            {
+                return true;
             }
             return false;
         }
@@ -79,6 +71,14 @@ namespace WFViewListBooksJournals.Presenters.Infrastructure
         public bool CheckCorrectnessDataAuthor(string firstName, string secondName, string lastName, string age)
         {
             if (!CheckCorrectnessAuthor(firstName) || !CheckCorrectnessAuthor(secondName) || !CheckCorrectnessAuthor(lastName) || !CheckCorrectnessAge(age))
+            {
+                return true;
+            }
+            return false;
+        }
+        public bool CheckCorrectnessDataAuthor(string firstName, string secondName, string lastName)
+        {
+            if (!CheckCorrectnessAuthor(firstName) || !CheckCorrectnessAuthor(secondName) || !CheckCorrectnessAuthor(lastName))
             {
                 return true;
             }
@@ -113,6 +113,15 @@ namespace WFViewListBooksJournals.Presenters.Infrastructure
             return false;
         }
 
+        private bool CheckCorrectnessDate(DateTime date)
+        {
+            if (date <= DateTime.Now)
+            {
+                return true;
+            }
+            return false;
+        }
+
         private bool CheckCorrectnessPages(string pages)
         {
             int tempPages;
@@ -139,7 +148,7 @@ namespace WFViewListBooksJournals.Presenters.Infrastructure
 
         private bool CheckCorrectnessLocation(string location)
         {
-            string patternName = @"^[\d\-]+$";
+            string patternName = @"^[\d\s–-]+$";
             Regex regexName = new Regex(patternName);
 
             bool success = false;
@@ -164,37 +173,5 @@ namespace WFViewListBooksJournals.Presenters.Infrastructure
             }
             return false;
         }
-        public bool CompareInsertValueFields(string publication, dynamic selectedValue, string author, string name, string pages, string dateTimePicker1, string title, string location, List<string> ListPublications)        
-        {
-            if (selectedValue == null)
-            {
-                return false;
-            }
-
-            if (ListPublications[0] == publication)
-            {
-                if (author == AdditionalMethods.GetStringAuthors(selectedValue.Author) & name == (string)selectedValue.Name & pages == (string)selectedValue.Pages.ToString() & dateTimePicker1 == (string)selectedValue.Date.ToString("D"))
-                {
-                    return false;
-                }
-            }
-
-            if (ListPublications[1] == publication)
-            {
-                if (author == AdditionalMethods.GetStringAuthors(selectedValue.Articles[0].Author) & name == (string)selectedValue.Name & pages == (string)selectedValue.NumberIssue & dateTimePicker1 == (string)selectedValue.Date.ToString("D") & title == (string)selectedValue.Articles[0].Title & location == (string)selectedValue.Articles[0].Location)
-                {
-                    return false;
-                }
-            }
-
-            if (ListPublications[2] == publication)
-            {
-                if (author == AdditionalMethods.GetStringAuthors(selectedValue.Articles[0].Author) & name == (string)selectedValue.Name & dateTimePicker1 == (string)selectedValue.Date.ToString("D") & title == (string)selectedValue.Articles[0].Title & location == (string)selectedValue.Articles[0].Location)
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-    }
+}
 }

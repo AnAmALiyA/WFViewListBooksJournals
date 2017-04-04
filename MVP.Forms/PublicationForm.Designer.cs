@@ -1,6 +1,6 @@
 ﻿namespace WFViewListBooksJournals.Forms
 {
-    partial class ChoicePublicationForm
+    partial class PublicationForm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.listBox1Form2 = new System.Windows.Forms.ListBox();
+            this.listBoxPublicationForm = new System.Windows.Forms.ListBox();
             this.labelAuthor = new System.Windows.Forms.Label();
             this.labelNamePublications = new System.Windows.Forms.Label();
             this.textBoxName = new System.Windows.Forms.TextBox();
@@ -41,26 +41,26 @@
             this.labelLocation = new System.Windows.Forms.Label();
             this.buttonAdd = new System.Windows.Forms.Button();
             this.buttonUpdate = new System.Windows.Forms.Button();
-            this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
+            this.dateTimePickerDate = new System.Windows.Forms.DateTimePicker();
             this.buttonDelete = new System.Windows.Forms.Button();
-            this.ComboBoxAuthor = new System.Windows.Forms.ComboBox();
+            this.comboBoxAuthor = new System.Windows.Forms.ComboBox();
             this.buttonNewAuthor = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
-            // listBox1Form2
+            // listBoxPublicationForm
             // 
-            this.listBox1Form2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.listBoxPublicationForm.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.listBox1Form2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.listBox1Form2.FormattingEnabled = true;
-            this.listBox1Form2.ItemHeight = 15;
-            this.listBox1Form2.Location = new System.Drawing.Point(12, 71);
-            this.listBox1Form2.Name = "listBox1Form2";
-            this.listBox1Form2.Size = new System.Drawing.Size(1069, 244);
-            this.listBox1Form2.TabIndex = 0;
-            this.listBox1Form2.SelectedIndexChanged += new System.EventHandler(this.listBox1Form2_SelectedIndexChanged);
-            this.listBox1Form2.DoubleClick += new System.EventHandler(this.listBox1Form2_DoubleClick);
+            this.listBoxPublicationForm.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.listBoxPublicationForm.FormattingEnabled = true;
+            this.listBoxPublicationForm.ItemHeight = 15;
+            this.listBoxPublicationForm.Location = new System.Drawing.Point(12, 71);
+            this.listBoxPublicationForm.Name = "listBoxPublicationForm";
+            this.listBoxPublicationForm.Size = new System.Drawing.Size(1069, 244);
+            this.listBoxPublicationForm.TabIndex = 0;
+            this.listBoxPublicationForm.SelectedIndexChanged += new System.EventHandler(this.listBoxPublicationForm_SelectedIndexChanged);
+            this.listBoxPublicationForm.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.listBoxPublicationForm_MouseDoubleClick);
             // 
             // labelAuthor
             // 
@@ -164,12 +164,12 @@
             this.buttonUpdate.UseVisualStyleBackColor = true;
             this.buttonUpdate.Click += new System.EventHandler(this.buttonUpdate_Click);
             // 
-            // dateTimePicker1
+            // dateTimePickerDate
             // 
-            this.dateTimePicker1.Location = new System.Drawing.Point(361, 31);
-            this.dateTimePicker1.Name = "dateTimePicker1";
-            this.dateTimePicker1.Size = new System.Drawing.Size(183, 20);
-            this.dateTimePicker1.TabIndex = 15;
+            this.dateTimePickerDate.Location = new System.Drawing.Point(361, 31);
+            this.dateTimePickerDate.Name = "dateTimePickerDate";
+            this.dateTimePickerDate.Size = new System.Drawing.Size(183, 20);
+            this.dateTimePickerDate.TabIndex = 15;
             // 
             // buttonDelete
             // 
@@ -183,11 +183,11 @@
             // 
             // comboBoxAuthor
             // 
-            this.ComboBoxAuthor.FormattingEnabled = true;
-            this.ComboBoxAuthor.Location = new System.Drawing.Point(12, 29);
-            this.ComboBoxAuthor.Name = "comboBoxAuthor";
-            this.ComboBoxAuthor.Size = new System.Drawing.Size(143, 21);
-            this.ComboBoxAuthor.TabIndex = 17;
+            this.comboBoxAuthor.FormattingEnabled = true;
+            this.comboBoxAuthor.Location = new System.Drawing.Point(12, 29);
+            this.comboBoxAuthor.Name = "comboBoxAuthor";
+            this.comboBoxAuthor.Size = new System.Drawing.Size(143, 21);
+            this.comboBoxAuthor.TabIndex = 17;
             // 
             // buttonNewAuthor
             // 
@@ -199,15 +199,15 @@
             this.buttonNewAuthor.UseVisualStyleBackColor = true;
             this.buttonNewAuthor.Click += new System.EventHandler(this.buttonNewAuthor_Click);
             // 
-            // Form2
+            // PublicationForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1093, 331);
             this.Controls.Add(this.buttonNewAuthor);
-            this.Controls.Add(this.ComboBoxAuthor);
+            this.Controls.Add(this.comboBoxAuthor);
             this.Controls.Add(this.buttonDelete);
-            this.Controls.Add(this.dateTimePicker1);
+            this.Controls.Add(this.dateTimePickerDate);
             this.Controls.Add(this.buttonUpdate);
             this.Controls.Add(this.buttonAdd);
             this.Controls.Add(this.labelLocation);
@@ -220,11 +220,12 @@
             this.Controls.Add(this.textBoxName);
             this.Controls.Add(this.labelNamePublications);
             this.Controls.Add(this.labelAuthor);
-            this.Controls.Add(this.listBox1Form2);
+            this.Controls.Add(this.listBoxPublicationForm);
             this.MinimumSize = new System.Drawing.Size(1109, 367);
-            this.Name = "Form2";
+            this.Name = "PublicationForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Form2";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.BeforeClosed);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -232,12 +233,12 @@
 
         #endregion
 
-        public System.Windows.Forms.ListBox listBox1Form2;
+        public System.Windows.Forms.ListBox listBoxPublicationForm;
         public System.Windows.Forms.Label labelAuthor;
         public System.Windows.Forms.Label labelNamePublications;
         public System.Windows.Forms.TextBox textBoxName;
         public System.Windows.Forms.Label labelDate;
-        public System.Windows.Forms.DateTimePicker dateTimePicker1;
+        public System.Windows.Forms.DateTimePicker dateTimePickerDate;
         public System.Windows.Forms.TextBox textBoxPages;
         public System.Windows.Forms.Label labelPages;
         public System.Windows.Forms.Label labelTitle;

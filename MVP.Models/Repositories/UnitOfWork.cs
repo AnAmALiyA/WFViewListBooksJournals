@@ -1,26 +1,43 @@
-﻿namespace WFViewListBooksJournals.Models.Repositories
+﻿using WFViewListBooksJournals.Models.Services;
+
+namespace WFViewListBooksJournals.Models.Repositories
 {
     public class UnitOfWork
     {
-        private BookRepository _book;
-        private JournalRepository _journal;
-        private NewspaperRepository _newspaper;
-        public AllLiterary AllLiterary { get; set; }
+        private AllLiterary AllLiterary { get; set; }
+        private readonly ADOContext _context;
 
-        public UnitOfWork()
+        private AuthorRepository author;
+        private BookRepository book;
+        private JournalRepository journal;
+        private NewspaperRepository newspaper;        
+
+        public UnitOfWork(string connectionString)
         {
             AllLiterary = new AllLiterary();
+            _context = new ADOContext(connectionString);
         }
-
+       
+        public AuthorRepository Author
+        {
+            get
+            {
+                if(author == null)
+                {
+                    author = new AuthorRepository(AllLiterary);
+                }
+                return author;
+            }
+        }
         public BookRepository Books
         {
             get
             {
-                if (_book == null)
+                if (book == null)
                 {
-                    _book = new BookRepository(AllLiterary);
+                    book = new BookRepository(AllLiterary, _context, this);
                 }
-                return _book;
+                return book;
             }
         }
 
@@ -28,11 +45,11 @@
         {
             get
             {
-                if (_journal == null)
+                if (journal == null)
                 {
-                    _journal = new JournalRepository(AllLiterary);
+                    journal = new JournalRepository(AllLiterary, this);
                 }
-                return _journal;
+                return journal;
             }
         }
 
@@ -40,11 +57,11 @@
         {
             get
             {
-                if (_newspaper == null)
+                if (newspaper == null)
                 {
-                    _newspaper = new NewspaperRepository(AllLiterary);
+                    newspaper = new NewspaperRepository(AllLiterary, this);
                 }
-                return _newspaper;
+                return newspaper;
             }
         }
     }

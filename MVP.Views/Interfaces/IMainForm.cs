@@ -1,13 +1,16 @@
-﻿using WFViewListBooksJournals.Views.Infrastructure;
-using WFViewListBooksJournals.Views.Infrastructure.Mapping;
-
-namespace WFViewListBooksJournals.Views.Interfaces
+﻿namespace WFViewListBooksJournals.Views.Interfaces
 {
     public interface IMainForm
     {
-        DataDisplay DataDisplay { get; set; }
-        MappingEntity Mapping { get; set; }
-
-        void CreateErrorForm(int error);
+        void InitializeComponentMainForm();
+        void ClearListBoxMain();
+        void FillListBoxMain(string publication);
+        void FillListBoxMain(string author, string nameBook, string year, int pages);
+        void FillListBoxMain(string author, string articleTitle, string publication, string year, string numberIssu, string locationArticle);
+        void FillListBoxMain(string author, string title, string location);
+        void ClearComboBoxAuthors();
+        void ClearComboBoxPublications();
+        void FillComboBoxAuthors(string[] authors);
+        void FillComboBoxPublications(string[] publications);
     }
 }

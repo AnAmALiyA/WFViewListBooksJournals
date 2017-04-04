@@ -1,104 +1,111 @@
 ﻿using System;
-using System.Windows.Forms;
 using System.Configuration;
+using System.Windows.Forms;
 using WFViewListBooksJournals.Presenters.Infrastructure;
 using WFViewListBooksJournals.Views.Interfaces;
-using WFViewListBooksJournals.Views.Infrastructure;
-using WFViewListBooksJournals.Views.Infrastructure.Mapping;
+using WFViewListBooksJournals.Views.Servises;
 
 namespace WFViewListBooksJournals.Forms
 {
     public partial class MainForm : Form, IMainForm
     {
-        private BussinesLogicPublications bussinesLogic;
-        public DataDisplay DataDisplay { get; set; }
-        public MappingEntity Mapping { get; set; }        
+        private PresetnerMainForm _presetnerMain;
+        private DisplayOfData DisplayData { get; set; }
 
         public MainForm()
         {
-            InitializeComponent();            
-            DataDisplay = new DataDisplay();
-            Mapping = new MappingEntity();
-
-            //bussinesLogic = new BussinesLogicPublications(this);
-            bussinesLogic = BussinesLogicPublications.Instance;
-            bussinesLogic.MainForm = this;
-
-            ShowAll_Click(null, null);
-            bussinesLogic.CreateDropDownListAuthor(comboBox1, listBox1);
-            bussinesLogic.CreateDropDownListPublications(comboBox2);
+            InitializeComponent();
+            string connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
+            _presetnerMain = new PresetnerMainForm(this, connectionString);
+            DisplayData = new DisplayOfData();
+            InitializeComponentMainForm();
+        }
+        public void InitializeComponentMainForm()
+        {
+            _presetnerMain.InitializeComponentMainForm();
         }
 
-        private void SaveNewspapers_Click(object sender, EventArgs e)
+        private void buttonShowAll_Click(object sender, EventArgs e)
         {
-            bussinesLogic.SaveNewspapers();
+            _presetnerMain.FillListBoxAllPublications();
         }
 
-        private void ShowAll_Click(object sender, EventArgs e)
+        public void ClearListBoxMain()
         {
-            bussinesLogic.ShowListLiterary(listBox1);
+            DisplayData.ClearListBox(listBoxMainForm);
         }
 
-        private void ShowAllArticles_Click(object sender, EventArgs e)
+        public void FillListBoxMain(string publication)
         {
-            bussinesLogic.ShowAllArticles(listBox1);
+            DisplayData.FillListBox(listBoxMainForm, publication);
         }
 
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        public void FillListBoxMain(string author, string nameBook, string year, int pages)
         {
-            string author = comboBox1.SelectedItem.ToString();
-            bussinesLogic.ShowEdition(author, listBox1);
+            DisplayData.FillListBox(listBoxMainForm, author, nameBook, year, pages);
         }
 
-        private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
+        public void FillListBoxMain(string author, string articleTitle, string publication, string year, string numberIssu, string locationArticle)
         {
-            string publication = comboBox2.SelectedItem.ToString();
-            ShowChoicePublication(publication);
+            DisplayData.FillListBox(listBoxMainForm, author, articleTitle, publication, year, numberIssu, locationArticle);
+        }
+        
+        public void FillListBoxMain(string author, string title, string location)
+        {
+            DisplayData.FillListBox(listBoxMainForm, author, title, location);
         }
 
-        private void ShowChoicePublication(string publication)
+        public void ClearComboBoxAuthors()
         {
-            ChoicePublicationForm newForm = new ChoicePublicationForm(publication);
-
-            ////создать нужную форму
-            //if (publication == ListPublications[0])
-            //{
-            //    AdjustDisplayBooks(NewForm2);
-            //}
-
-            //if (publication == ListPublications[1])
-            //{
-            //    AdjustDisplayJournals(NewForm2);
-            //}
-
-            //if (publication == ListPublications[2])
-            //{
-            //    AdjustDisplayNewspapers(NewForm2);
-            //}
-            //NewForm2.FillDataMainListBox(publication);
-
-            //CreateDropDownListAuthor(NewForm2.comboBoxAuthor, NewForm2.listBox1Form2);
-            //ListAuthorsForm2 = GetListListsAuthorForm2();
-
-            newForm.ShowForm();
+            DisplayData.ClearComboBox(comboBoxAuthors);
         }
 
-        private void buttonSaveJournals_Click(object sender, EventArgs e)
+        public void ClearComboBoxPublications()
         {
-            bussinesLogic.SaveJournals();
+            DisplayData.ClearComboBox(comboBoxPublications);
+        }
+
+        public void FillComboBoxAuthors(string[] arrayAuthor)
+        {
+            DisplayData.FillComboBox(comboBoxAuthors, arrayAuthor);
+        }
+
+        public void FillComboBoxPublications(string[] arrayPublications)
+        {
+            DisplayData.FillComboBox(comboBoxPublications, arrayPublications);
+        }
+
+        private void buttonShowAllArticles_Click(object sender, EventArgs e)
+        {
+            _presetnerMain.ShowAllArticles();
         }
 
         private void buttonSaveBooks_Click(object sender, EventArgs e)
         {
-            bussinesLogic.SaveBooks(ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString);
+            _presetnerMain.SaveBook();
         }
 
-        public void CreateErrorForm(int error)
+        private void buttonSaveJournals_Click(object sender, EventArgs e)
         {
-            ErrorForm errorForm = new ErrorForm();
-            errorForm.Text = DataDisplay.GetTitleErrorForm();
-            errorForm.label1.Text = DataDisplay.Error(error);
-            errorForm.Show();
+            _presetnerMain.SaveJournals();
+        }
+
+        private void buttonSaveNewspapers_Click(object sender, EventArgs e)
+        {
+            _presetnerMain.SaveNewspaper();
+        }
+
+        private void comboBoxAuthors_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string authorId = comboBoxAuthors.SelectedItem.ToString();
+            _presetnerMain.FillListBoxPublicationAuthor(authorId);
+        }
+
+        private void comboBoxPublications_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string publicationId = comboBoxPublications.SelectedItem.ToString();
+            PublicationForm form = new PublicationForm(publicationId, this);
+            form.Show();
         }
     }
 }

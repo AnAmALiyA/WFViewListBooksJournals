@@ -1,117 +1,103 @@
-﻿using System.Data;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using WFViewListBooksJournals.Entities;
-using WFViewListBooksJournals.Models.ADO.NET;
-using WFViewListBooksJournals.Models.Infrastructure;
+using WFViewListBooksJournals.Models.Services;
 
 namespace WFViewListBooksJournals.Models.Repositories
 {
     public class BookRepository
     {
-        public List<Book> ListEntities { get; set; }
-        private AllLiterary AllLiterary { get; set; }
-        private string[] TableFields { get; set; }
+        private static IEnumerable<Book> ListEntities { get; set; }
+        private readonly ADOContext _context;
+        private UnitOfWork _unitOfWork;
 
-        public BookRepository(AllLiterary allLiterary)
+        public BookRepository(AllLiterary allLiterary, ADOContext context, UnitOfWork unitOfWork)
         {
-            ListEntities = allLiterary.FillTheListBook();
-            AllLiterary = allLiterary;
-            TableFields = new string[] { "Authors", "Books", "Id" , "FirstName", "SecondName", "LastName", "Age",
-                "InitialsOption", "BookId", "AuthorId", "Name", "Date", "Pages" };
+            ListEntities = allLiterary.Books as IEnumerable<Book>;
+            this._context = context;
+            _unitOfWork = unitOfWork;
         }
 
-        public void SaveDB(string connectionString)
+        public IEnumerable<Book> GetAll()
         {
-            ADOContext context = new ADOContext(connectionString);
-            context.DeleteAuthors();
-            context.DeleteBooks();
-            context.DeleteManyBooksToManyAuthors();
-
-            DataTable tableAuthors = context.GetTableAuthors();
-            DataTable tableBooks = context.GetTableBooks();
-
-            SaveListAuthor(context, tableAuthors, AllLiterary.ListAuthor, AllLiterary.NewListAuthor);
-            SaveListBook(context, tableBooks, ListEntities);
+            return ListEntities;
         }
 
-        private void SaveListAuthor(ADOContext context, DataTable table, List<Author> authors, List<Author> newAuthors)
+        public void SaveDB()
         {
-             foreach (Author author in authors)
-            {
-                AddRow(ref table, author);
-            }
+            _context.DeleteBooksAuthors();
+            _context.DeleteAuthors();
+            _context.DeleteBooks();
 
-            foreach (Author author in newAuthors)
-            {
-                AddRow(ref table, author);
-            }
-
-            context.InsertAuthors(table);
+            _context.SaveBooks(ListEntities);
         }
 
-        private void AddRow(ref DataTable table, Author author)
+        public bool Find(string author, string namePublication, DateTime date, string pages)
         {
-            DataRow newRow = table.NewRow();
-            newRow[TableFields[3]] = author.FirstName;
-            newRow[TableFields[4]] = author.SecondName;
-            newRow[TableFields[5]] = author.LastName;
-            newRow[TableFields[6]] = author.Age;
-            newRow[TableFields[7]] = author.InitialsOption;
+            foreach (var book in ListEntities)
+            {
+                if(book.Name != namePublication & book.Date != date & book.Pages.ToString() != pages)
+                {
+                    continue;
+                }
+                foreach (var item in book.Authors)
+                {
+                    if (item.GetStringAuthor()!=author)
+                    {
+                        continue;
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
 
-            try
+        public void Create(string author, string name, DateTime date, string pages)
+        {
+            ICollection<Author> collectionAuthor = new List<Author>();
+            Author item = _unitOfWork.Author.GetAll().Find(x => x.GetStringAuthor() == author);
+            collectionAuthor.Add(item);
+
+            List<Book> books = ListEntities.ToList();
+            books.Add(new Book() { Authors = collectionAuthor, Name=name, Date=date, Pages=Int32.Parse(pages) });
+            ListEntities = books as ICollection<Book>;
+        }
+
+        public void Udate(Book book, string author, string name, DateTime date, string pages, int selected)
+        {
+            bool existAuthor = false;
+            foreach (Author itemAuthor in book.Authors)
             {
-                table.Rows.Add(newRow);
+                if (itemAuthor.GetStringAuthor()==author)
+                {
+                    existAuthor = true;
+                    return;
+                }
             }
-            catch (System.Exception)
+
+            if (!existAuthor)
             {
-                throw;
-            }
+                Author newAuthor = _unitOfWork.Author.GetAll().Find(a => a.GetStringAuthor() == author);
+                book.Authors.Add(newAuthor);
+            }            
+
+            book.Name = name;
+            book.Date = date;
+            book.Pages = Int32.Parse(pages);
+            
+            var books = GetAll().ToList();
+            books[selected] = book;
+            ListEntities = books as ICollection<Book>;
         }
         
-        private void SaveListBook(ADOContext context, DataTable table, List<Book> books)
+        public void Delete(Book book)
         {
-            foreach (Book book in books)
-            {
-                DataRow newRow = table.NewRow();
-                newRow[TableFields[10]] = book.Name;
-                newRow[TableFields[11]] = book.Date;
-                newRow[TableFields[12]] = book.Pages;
+            var books = GetAll();
 
-                try
-                {
-                    table.Rows.Add(newRow);
-                }
-                catch (System.Exception)
-                {
-                    throw;
-                }
+            books = books.Except(new List<Book>(){ book });
 
-                context.InsertBooks(table);
-
-                int bookId = context.FindBook(book.Name, book.Date, book.Pages);
-                List<int> listAuthorId = GetListAuthor(context, book);
-
-                foreach (int authorId in listAuthorId)
-                {
-                    context.InsertManyBooksToManyAuthors(bookId, authorId);
-                }
-            }
-        }
-
-        private List<int> GetListAuthor(ADOContext context, Book book)
-        {
-            List<int> listAuthor = new List<int>();
-
-            int temp = (int)EnumSystem.NullAuthor;
-            foreach (Author author in book.Authors)
-            {
-                temp = context.FindAuthor(author.FirstName, author.SecondName, author.LastName, author.Age, author.InitialsOption);
-                if (temp != (int)EnumSystem.NullAuthor)
-                {
-                    listAuthor.Add(temp);
-                }
-            }
-            return listAuthor;
+            ListEntities = books;
         }
     }
 }

@@ -41,7 +41,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Infrastructure\BussinesLogicPublications.cs" />
+    <Compile Include="Services\AdditionalMethods.cs" />
+    <Compile Include="Infrastructure\PresetnerAuthorForm.cs" />
+    <Compile Include="Infrastructure\PresetnerMainForm.cs" />
+    <Compile Include="Infrastructure\PresetnerPublicationForm.cs" />
     <Compile Include="Infrastructure\Validation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

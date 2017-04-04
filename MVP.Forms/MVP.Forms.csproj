@@ -47,23 +47,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AddAuthorForm.cs">
+    <Compile Include="AuthorForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AddAuthorForm.Designer.cs">
-      <DependentUpon>AddAuthorForm.cs</DependentUpon>
+    <Compile Include="AuthorForm.Designer.cs">
+      <DependentUpon>AuthorForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ChoicePublicationForm.cs">
+    <Compile Include="PublicationForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ChoicePublicationForm.Designer.cs">
-      <DependentUpon>ChoicePublicationForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ErrorForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ErrorForm.Designer.cs">
-      <DependentUpon>ErrorForm.cs</DependentUpon>
+    <Compile Include="PublicationForm.Designer.cs">
+      <DependentUpon>PublicationForm.cs</DependentUpon>
     </Compile>
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
@@ -73,14 +67,11 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="AddAuthorForm.resx">
-      <DependentUpon>AddAuthorForm.cs</DependentUpon>
+    <EmbeddedResource Include="AuthorForm.resx">
+      <DependentUpon>AuthorForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ChoicePublicationForm.resx">
-      <DependentUpon>ChoicePublicationForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ErrorForm.resx">
-      <DependentUpon>ErrorForm.cs</DependentUpon>
+    <EmbeddedResource Include="PublicationForm.resx">
+      <DependentUpon>PublicationForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
@@ -111,6 +102,10 @@
     <ProjectReference Include="..\MVP.Entities\MVP.Entities.csproj">
       <Project>{1f71096a-1aff-4406-b189-2b1699ed1ff9}</Project>
       <Name>MVP.Entities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MVP.Models\MVP.Models.csproj">
+      <Project>{ABC043BF-1969-4849-8833-BBC49F302211}</Project>
+      <Name>MVP.Models</Name>
     </ProjectReference>
     <ProjectReference Include="..\MVP.Presenters\MVP.Presenters.csproj">
       <Project>{1e4f799c-f582-43e4-9013-14911113f1fc}</Project>

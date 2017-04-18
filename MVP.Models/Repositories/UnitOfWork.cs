@@ -4,7 +4,7 @@ namespace WFViewListBooksJournals.Models.Repositories
 {
     public class UnitOfWork
     {
-        private AllLiterary AllLiterary { get; set; }
+        private DataBase AllLiterary { get; set; }
         private readonly ADOContext _context;
 
         private AuthorRepository author;
@@ -14,7 +14,7 @@ namespace WFViewListBooksJournals.Models.Repositories
 
         public UnitOfWork(string connectionString)
         {
-            AllLiterary = new AllLiterary();
+            AllLiterary = new DataBase();
             _context = new ADOContext(connectionString);
         }
        

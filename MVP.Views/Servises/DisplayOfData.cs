@@ -1,10 +1,28 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
+using WFViewListBooksJournals.Entities;
 
 namespace WFViewListBooksJournals.Views.Servises
 {
     public class DisplayOfData
     {
+        private static DisplayOfData _instance;
+
+        private DisplayOfData() { }
+
+        public static DisplayOfData Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = new DisplayOfData();
+                }
+                return _instance;
+            }
+        }
+
         public void ClearListBox(ListBox listBox)
         {
             listBox.Items.Clear();
@@ -20,19 +38,53 @@ namespace WFViewListBooksJournals.Views.Servises
             listBox.Items.Add(publication);
         }
 
-        public void FillListBox(ListBox listBox, string author, string nameBook, string year, int pages)
+        public void FillListBox(ListBox listBox, Book book, Dictionary<int, Book> bookList)
         {
-            listBox.Items.Add(string.Format("\t{0} {1}, – {2} г. - {3} ст.", author, nameBook, year, pages));
+            string authors = GetStringAuthorList(book.Authors);
+            string year = book.Date.Year.ToString();
+            listBox.Items.Add(string.Format("\t{0} {1}, – {2} г. - {3} ст.", authors, book.Name, year, book.Pages));
+
+            int index = listBox.Items.Count;
+            index--;
+            bookList.Add(index, book);
         }
 
-        public void FillListBox(ListBox listBox, string author, string articleTitle, string publication, string year, string numberIssu, string locationArticle)
+        public void FillListBox(ListBox listBox, Journal journal, Dictionary<int, Journal> journalList)
         {
-            listBox.Items.Add(string.Format("\t{0} {1}. {2}, - {3} г. - {4}. - C. {5}", author, articleTitle, publication, year, numberIssu, locationArticle));
+            foreach (Article article in journal.Articles)
+            {
+                string authors = GetStringAuthorList(article.Authors);
+                string year = journal.Date.Year.ToString();
+                listBox.Items.Add(string.Format("\t{0} {1}. {2}, - {3} г. - {4}. - C. {5}", authors, article.Title, journal.Name, year, journal.NumberIssue, article.Location));
+
+                int index = listBox.Items.Count;
+                index--;
+                var tempJournal = new Journal() { Articles = new List<Article>() { article }, Date = journal.Date, Name = journal.Name, NumberIssue = journal.NumberIssue };
+                journalList.Add(index, tempJournal);
+            }            
         }
 
-        public void FillListBox(ListBox listBox, string author, string title, string location)
+        public void FillListBox(ListBox listBox, Newspaper newspaper, Dictionary<int, Newspaper> newspaperList)
         {
-            listBox.Items.Add(string.Format("\t{0} {1}. - C. {2}", author, title, location));
+            foreach (Article article in newspaper.Articles)
+            {
+                string authors = GetStringAuthorList(article.Authors);
+                string year = newspaper.Date.Year.ToString();
+                string number = newspaper.Date.ToString("d.MMMM");
+                listBox.Items.Add(string.Format("\t{0} {1}. {2}, - {3} г. - {4}. - C. {5}", authors, article.Title, newspaper.Name, year, number, article.Location));
+
+                int index = listBox.Items.Count;
+                index--;
+                var tempNewspaper = new Newspaper() { Articles = new List<Article>() { article }, Date = newspaper.Date, Name = newspaper.Name};
+                newspaperList.Add(index, tempNewspaper);
+            }
+        }
+
+        public void FillListBox(ListBox listBox, Article article)
+        {
+            string authors = GetStringAuthorList(article.Authors);
+            listBox.Items.Add(string.Format("\t{0} {1}. - C. {2}", authors, article.Title, article.Location));
+
         }
 
         public void ClearComboBox(ComboBox comboBox)
@@ -40,12 +92,31 @@ namespace WFViewListBooksJournals.Views.Servises
             comboBox.Items.Clear();
         }
 
-        public void FillComboBox(ComboBox comboBox, string[] array)
+        public void FillComboBox(ComboBox comboBox, IEnumerable<string> listItemString)
         {
-            for (int i = 0; i < array.Length; i++)
+            foreach (var itemString in listItemString)
             {
-                comboBox.Items.Add(array[i]);
-            }            
+                comboBox.Items.Add(itemString);
+            }
+        }
+
+        public string GetStringAuthor(Author author)
+        {
+            string tempAuthor = string.Empty;
+            tempAuthor += author.InitialsOption ? author.FirstName + author.LastName + " " + author.SecondName : author.SecondName + " " + author.FirstName + author.LastName;
+            tempAuthor += author.Age == default(int) ? string.Empty : " " + author.Age.ToString();
+            return tempAuthor;
+        }
+
+        public string GetStringAuthorList(ICollection<Author> listAuthors)
+        {
+            string authors = string.Empty;
+            foreach (Author author in listAuthors)
+            {
+                string stringAuthor = GetStringAuthor(author);
+                authors += stringAuthor;
+            }
+            return authors;
         }
     }
 }

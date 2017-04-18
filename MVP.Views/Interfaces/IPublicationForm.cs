@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using WFViewListBooksJournals.Entities;
 
 namespace WFViewListBooksJournals.Views.Interfaces
 {
@@ -6,14 +8,12 @@ namespace WFViewListBooksJournals.Views.Interfaces
     {
         void InitializeComponentPublicationForm();
         void ClearComboBoxAuthors();
-        void FillComboBoxAuthors(string[] arrayAuthor);
+        void FillOnlyComboBoxAuthors();
+        void FillComboBoxAuthors(List<Author> authorList);
         void ClearListBoxMain();
-        void FillListBoxMain(string publication);
-        void FillListBoxMain(string author, string nameBook, string year, int pages);
-        void FillListBoxMain(string author, string articleTitle, string publication, string year, string numberIssu, string locationArticle);
-        void FillListBoxMain(string author, string title, string location);
-        void FillFields(int idAuthor, string name, DateTime date, int pages);
-        void FillFields(int idAuthor, string title, string location, string name, DateTime date, string numberIssue);
-        void FillFields(int idAuthor, string title, string location, string name, DateTime date);
+        void FillListBoxMain(string publication);        
+        void FillListBoxMain(List<Book> bookList);
+        void FillListBoxMain(List<Journal> journalList);
+        void FillListBoxMain(List<Newspaper> newspaperList);
     }
 }

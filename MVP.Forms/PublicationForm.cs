@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
+using System.Linq;
 using System.Windows.Forms;
+using WFViewListBooksJournals.Entities;
 using WFViewListBooksJournals.Presenters.Infrastructure;
 using WFViewListBooksJournals.Views.Interfaces;
 using WFViewListBooksJournals.Views.Servises;
@@ -10,62 +11,68 @@ namespace WFViewListBooksJournals.Forms
 {
     public partial class PublicationForm : Form, IPublicationForm
     {
-        private PresetnerPublicationForm _presetnerPublication;
+        private readonly string _currentPublication;
+        private DisplayOfData _displayData;
         private IMainForm _mainForm;
-        private DisplayOfData DisplayData { get; set; }
-        private Dictionary<Enum, string> DictionaryPublication { get; set; }
-        private enum EnumPublicationForm { NoSelectedIndex = -1 }
-        private enum EnumDictionaryPublication {
-            LabelPages,
-            LabelNamePublications,
-            Book,
-            Journal,
-            Newspaper
-        }
-        private int SelectedIndex { get; set; }
+        private PresetnerPublicationForm _presetnerPublication;
+        private Validation _validation;
+
+        private Dictionary<string, string> PublicationText { get; set; }
+        private List<Author> _authorList;
+
+        private Dictionary<int, Book> _bookListForIndex;
+        private Dictionary<int, Journal> _journalListForIndex;
+        private Dictionary<int, Newspaper> _newspaperListForIndex;
+
+        private enum EnumPublicationForm { NoSelectedIndex = -1, Book, Journal, Newspaper }
+        private int SelectedIndexPublication { get; set; }
 
         public PublicationForm(string publication, IMainForm mainForm)
         {
             InitializeComponent();
-            string connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
-            _presetnerPublication = new PresetnerPublicationForm(this, publication, connectionString);
-            DisplayData = new DisplayOfData();
-            this.Text = publication;
-            SelectedIndex = (int)EnumPublicationForm.NoSelectedIndex;
 
-            DictionaryPublication = new Dictionary<Enum, string>();
-                DictionaryPublication.Add(EnumDictionaryPublication.LabelPages, "Number Issue");
-                DictionaryPublication.Add(EnumDictionaryPublication.LabelNamePublications, "Name Journal");
-                DictionaryPublication.Add(EnumDictionaryPublication.Book, "Book");
-                DictionaryPublication.Add(EnumDictionaryPublication.Journal, "Journal");
-                DictionaryPublication.Add(EnumDictionaryPublication.Newspaper, "Newspaper");
+            this.Text = publication;
+            _currentPublication = publication;
+            _displayData = DisplayOfData.Instance;
+            _mainForm = mainForm;
+            _presetnerPublication = new PresetnerPublicationForm(this, publication);
+            _validation = Validation.Instance;
+
+            PublicationText = new Dictionary<string, string>();
+            PublicationText.Add("NumberIssue", "Number Issue");
+            PublicationText.Add("NameJournal", "Name Journal");
 
             SelectPublicationForm(publication);
             InitializeComponentPublicationForm();
-            _mainForm = mainForm;
-    }
+
+            SelectedIndexPublication = (int)EnumPublicationForm.NoSelectedIndex;
+        }
+
         public void InitializeComponentPublicationForm()
         {
             _presetnerPublication.InitializeComponentPublicationForm();
         }
+
         private void SelectPublicationForm(string publication)
         {
-            if (DictionaryPublication[EnumDictionaryPublication.Book]== publication)
+            if (EnumPublicationForm.Book.ToString() == _currentPublication)
             {
                 AdjustDisplayBooks();
+                _bookListForIndex = new Dictionary<int, Book>();
                 return;
             }
 
-            if (DictionaryPublication[EnumDictionaryPublication.Journal] == publication)
+            if (EnumPublicationForm.Journal.ToString() == _currentPublication)
             {
                 AdjustDisplayJournals();
+                _journalListForIndex = new Dictionary<int, Journal>();
                 return;
             }
 
-            if (DictionaryPublication[EnumDictionaryPublication.Newspaper] == publication)
+            if (EnumPublicationForm.Newspaper.ToString() == _currentPublication)
             {
                 AdjustDisplayNewspapers();
-                return;
+                _newspaperListForIndex = new Dictionary<int, Newspaper>();
             }
         }
 
@@ -80,8 +87,8 @@ namespace WFViewListBooksJournals.Forms
 
         private void AdjustDisplayJournals()
         {
-            labelPages.Text = DictionaryPublication[EnumDictionaryPublication.LabelPages];
-            labelNamePublications.Text = DictionaryPublication[EnumDictionaryPublication.LabelNamePublications];
+            labelPages.Text = PublicationText["NumberIssue"];
+            labelNamePublications.Text = PublicationText["NameJournal"];
         }
 
         private void AdjustDisplayNewspapers()
@@ -92,122 +99,341 @@ namespace WFViewListBooksJournals.Forms
 
         public void ClearComboBoxAuthors()
         {
-            DisplayData.ClearComboBox(comboBoxAuthor);
+            _displayData.ClearComboBox(comboBoxAuthor);
         }
 
-        public void FillComboBoxAuthors(string[] arrayAuthor)
+        public void FillOnlyComboBoxAuthors()
         {
-            DisplayData.FillComboBox(comboBoxAuthor, arrayAuthor);
+            _presetnerPublication.FillComboBoxAllAuthors();
+        }
+
+        public void FillComboBoxAuthors(List<Author> authorList)
+        {
+            _authorList = authorList;
+            var authorStringList = authorList.Select(x => _displayData.GetStringAuthor(x));
+            _displayData.FillComboBox(comboBoxAuthor, authorStringList);
         }
 
         public void ClearListBoxMain()
         {
-            DisplayData.ClearListBox(listBoxPublicationForm);
+            _displayData.ClearListBox(listBoxPublicationForm);
         }
 
         public void FillListBoxMain(string publication)
         {
-            DisplayData.FillListBox(listBoxPublicationForm, publication);
+            _displayData.FillListBox(listBoxPublicationForm, publication);
         }
 
-        public void FillListBoxMain(string author, string nameBook, string year, int pages)
+        public void FillListBoxMain(List<Book> bookList)
         {
-            DisplayData.FillListBox(listBoxPublicationForm, author, nameBook, year, pages);
+            _bookListForIndex = new Dictionary<int, Book>();
+            foreach (var book in bookList)
+            {
+                _displayData.FillListBox(listBoxPublicationForm, book, _bookListForIndex);
+            }
         }
 
-        public void FillListBoxMain(string author, string articleTitle, string publication, string year, string numberIssu, string locationArticle)
+        public void FillListBoxMain(List<Journal> journalList)
         {
-            DisplayData.FillListBox(listBoxPublicationForm, author, articleTitle, publication, year, numberIssu, locationArticle);
+            _journalListForIndex = new Dictionary<int, Journal>();
+            foreach (var journal in journalList)
+            {
+                _displayData.FillListBox(listBoxPublicationForm, journal, _journalListForIndex);
+            }
         }
 
-        public void FillListBoxMain(string author, string title, string location)
+        public void FillListBoxMain(List<Newspaper> newspaperList)
         {
-            DisplayData.FillListBox(listBoxPublicationForm, author, title, location);
+            _newspaperListForIndex = new Dictionary<int, Newspaper>();
+            foreach (var newspaper in newspaperList)
+            {
+                _displayData.FillListBox(listBoxPublicationForm, newspaper, _newspaperListForIndex);
+            }
         }
 
         private void listBoxPublicationForm_SelectedIndexChanged(object sender, EventArgs e)
-         {
-            if (listBoxPublicationForm.SelectedIndex!= default(int))
-            {
-                SelectedIndex = listBoxPublicationForm.SelectedIndex;
-                SelectedIndex--;
-            }
+        {
+            SelectedIndexPublication = listBoxPublicationForm.SelectedIndex;
         }
 
         private void listBoxPublicationForm_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            if (listBoxPublicationForm.SelectedIndex != default(int))
+            if (listBoxPublicationForm.SelectedIndex == default(int) || listBoxPublicationForm.SelectedIndex == (int)EnumPublicationForm.NoSelectedIndex)
             {
-                SelectedIndex = listBoxPublicationForm.SelectedIndex;
-                SelectedIndex--;
-                _presetnerPublication.FillFieldsForm(SelectedIndex);
+                return;
+            }
+
+            FillFieldsForm(SelectedIndexPublication);
+        }
+
+        private void FillFieldsForm(int SelectedIndex)
+        {
+            if (EnumPublicationForm.Book.ToString() == _currentPublication)
+            {
+                var selectedBook = _bookListForIndex[SelectedIndex];
+                FillFields(selectedBook);
+                return;
+            }
+
+            if (EnumPublicationForm.Journal.ToString() == _currentPublication)
+            {
+                var selectedJournal = _journalListForIndex[SelectedIndex];
+                FillFields(selectedJournal);
+                return;
+            }
+
+            if (EnumPublicationForm.Newspaper.ToString() == _currentPublication)
+            {
+                var selectedNewspaper = _newspaperListForIndex[SelectedIndex];
+                FillFields(selectedNewspaper);
             }
         }
 
-        public void FillFields(int selectedAuthor, string name, DateTime date, int pages)
+        private void FillFields(Book book)
         {
-            comboBoxAuthor.SelectedIndex = selectedAuthor;
-            textBoxName.Text = name;
-            dateTimePickerDate.Value = date;
-            textBoxPages.Text = pages.ToString();
+            var authorList = book.Authors;
+            int indexAuthor = GetIndexAuthor(authorList);
+
+            comboBoxAuthor.SelectedIndex = indexAuthor;
+            textBoxName.Text = book.Name;
+            dateTimePickerDate.Value = book.Date;
+            textBoxPages.Text = book.Pages.ToString();
         }
 
-        public void FillFields(int selectedAuthor, string title, string location, string name, DateTime date, string numberIssue)
+        private void FillFields(Journal journal)
         {
-            comboBoxAuthor.SelectedIndex = selectedAuthor;
-            textBoxTitle.Text = title;
-            textBoxLocation.Text = location;
-            textBoxName.Text = name;
-            dateTimePickerDate.Value = date;
-            textBoxPages.Text = numberIssue;
+            var authorList = journal.Articles.First().Authors;
+            int indexAuthor = GetIndexAuthor(authorList);
+            comboBoxAuthor.SelectedIndex = indexAuthor;
+
+            string journalTitle = journal.Articles.First().Title;
+            textBoxTitle.Text = journalTitle;
+
+            string journalLocation = journal.Articles.First().Location;
+            textBoxLocation.Text = journalLocation;
+
+            textBoxName.Text = journal.Name;
+            dateTimePickerDate.Value = journal.Date;
+            textBoxPages.Text = journal.NumberIssue;
         }
 
-        public void FillFields(int selectedAuthor, string title, string location, string name, DateTime date)
+        private void FillFields(Newspaper newspaper)
         {
-            comboBoxAuthor.SelectedIndex = selectedAuthor;
-            textBoxTitle.Text = title;
-            textBoxLocation.Text = location;
-            textBoxName.Text = name;
-            dateTimePickerDate.Value = date;            
+            var authorList = newspaper.Articles.First().Authors;
+            int indexAuthor = GetIndexAuthor(authorList);
+
+            comboBoxAuthor.SelectedIndex = indexAuthor;
+
+            string newspaperTitle = newspaper.Articles.First().Title;
+            textBoxTitle.Text = newspaperTitle;
+
+            string newspaperLocation = newspaper.Articles.First().Location;
+            textBoxLocation.Text = newspaperLocation;
+
+            textBoxName.Text = newspaper.Name;
+            dateTimePickerDate.Value = newspaper.Date;
+        }
+
+        private int GetIndexAuthor(ICollection<Author> authors)
+        {
+            var firstAuthor = authors.First();
+            var stringAuthor = _displayData.GetStringAuthor(firstAuthor);
+            int indexAuthor = _authorList.IndexOf(firstAuthor);
+            return indexAuthor;
+        }
+
+        private void ClearFields()
+        {
+            comboBoxAuthor.SelectedIndex = (int)EnumPublicationForm.NoSelectedIndex;
+            textBoxName.Text = string.Empty;
+            dateTimePickerDate.Value = DateTime.Now;
+            textBoxPages.Text = string.Empty;
+            textBoxTitle.Text = string.Empty;
+            textBoxLocation.Text = string.Empty;
         }
 
         private void buttonAdd_Click(object sender, EventArgs e)
         {
-            string tempItems = comboBoxAuthor.Items[comboBoxAuthor.SelectedIndex].ToString();
-            bool valid = _presetnerPublication.Validation(tempItems, textBoxName.Text, textBoxPages.Text, dateTimePickerDate.Value, textBoxTitle.Text, textBoxLocation.Text);
+            var selectedAuthor = _authorList[comboBoxAuthor.SelectedIndex];
+            bool isAdd = false;
 
-            if (valid)
+            if (EnumPublicationForm.Book.ToString() == _currentPublication)
             {
-                return;
+                isAdd = buttonAdd_Click_Book(selectedAuthor);
             }
 
-            _presetnerPublication.AddDataReposotiry(tempItems, textBoxName.Text, textBoxPages.Text, dateTimePickerDate.Value, textBoxTitle.Text, textBoxLocation.Text);
-            
-            _presetnerPublication.FillListBoxPublication();
+            if (EnumPublicationForm.Journal.ToString() == _currentPublication)
+            {
+                isAdd = buttonAdd_Click_Journal(selectedAuthor);
+            }
+
+            if (EnumPublicationForm.Newspaper.ToString() == _currentPublication)
+            {
+                isAdd = buttonAdd_Click_Newspaper(selectedAuthor);
+            }
+
+            if (isAdd)
+            {
+                ClearFields();
+                _presetnerPublication.FillListBoxPublication();
+            }
+        }
+
+        private bool buttonAdd_Click_Book(Author selectedAuthor)
+        {
+            var selectedBook = _bookListForIndex[SelectedIndexPublication];
+
+            bool valid = _validation.ValidationDataPublication(selectedBook, selectedAuthor, textBoxName.Text, dateTimePickerDate.Value, textBoxPages.Text);
+            if (valid)
+            {
+                int pages = Int32.Parse(textBoxPages.Text);
+                _presetnerPublication.AddDataReposotiry(selectedAuthor, textBoxName.Text, dateTimePickerDate.Value, pages);
+                return true;
+            }
+            return false;
+        }
+
+        private bool buttonAdd_Click_Journal(Author selectedAuthor)
+        {
+            var selectedJournal = _journalListForIndex[SelectedIndexPublication];
+
+            bool valid = _validation.ValidationDataPublication(selectedJournal, selectedAuthor, textBoxTitle.Text, textBoxLocation.Text, textBoxName.Text, dateTimePickerDate.Value, textBoxPages.Text);
+            if (valid)
+            {
+                _presetnerPublication.AddDataReposotiry(selectedAuthor, textBoxTitle.Text, textBoxLocation.Text, textBoxName.Text, dateTimePickerDate.Value, textBoxPages.Text);
+                return true;
+            }
+            return false;
+        }
+
+        private bool buttonAdd_Click_Newspaper(Author selectedAuthor)
+        {
+            var selectedNewspaper = _newspaperListForIndex[SelectedIndexPublication];
+
+            bool valid = _validation.ValidationDataPublication(selectedNewspaper, selectedAuthor, textBoxTitle.Text, textBoxLocation.Text, textBoxName.Text, dateTimePickerDate.Value);
+            if (valid)
+            {
+                _presetnerPublication.AddDataReposotiry(selectedAuthor, textBoxTitle.Text, textBoxLocation.Text, textBoxName.Text, dateTimePickerDate.Value);
+                return true;
+            }
+            return false;
         }
 
         private void buttonUpdate_Click(object sender, EventArgs e)
         {
-            string tempItems = comboBoxAuthor.Items[comboBoxAuthor.SelectedIndex].ToString();
-            bool valid = _presetnerPublication.Validation(tempItems, textBoxName.Text, textBoxPages.Text, dateTimePickerDate.Value, textBoxTitle.Text, textBoxLocation.Text);
+            var selectedAuthor = _authorList[comboBoxAuthor.SelectedIndex];
+            bool isAdd = false;
 
-            if (valid)
+            if (EnumPublicationForm.Book.ToString() == _currentPublication)
             {
-                return;
+                isAdd = buttonUpdate_Click_Book(selectedAuthor);
             }
 
-            _presetnerPublication.UpdateReposotiry(tempItems, textBoxName.Text, textBoxPages.Text, dateTimePickerDate.Value, textBoxTitle.Text, textBoxLocation.Text);
-            
-            _presetnerPublication.FillListBoxPublication();
+            if (EnumPublicationForm.Journal.ToString() == _currentPublication)
+            {
+                isAdd = buttonUpdate_Click_Journal(selectedAuthor);
+            }
+
+            if (EnumPublicationForm.Newspaper.ToString() == _currentPublication)
+            {
+                isAdd = buttonUpdate_Click_Newspaper(selectedAuthor);
+            }
+
+            if (isAdd)
+            {
+                ClearFields();
+                _presetnerPublication.FillListBoxPublication();
+            }
+        }
+
+        private bool buttonUpdate_Click_Book(Author selectedAuthor)
+        {
+            var selectedBook = _bookListForIndex[SelectedIndexPublication];
+
+            bool valid = _validation.ValidationDataPublication(selectedBook, selectedAuthor, textBoxName.Text, dateTimePickerDate.Value, textBoxPages.Text);
+            if (valid)
+            {
+                int pages = Int32.Parse(textBoxPages.Text);
+                _presetnerPublication.UpdateReposotiry(selectedBook, selectedAuthor, textBoxName.Text, dateTimePickerDate.Value, pages);
+                return true;
+            }
+            return false;
+        }
+
+        private bool buttonUpdate_Click_Journal(Author selectedAuthor)
+        {
+            var selectedJournal = _journalListForIndex[SelectedIndexPublication];
+
+            bool valid = _validation.ValidationDataPublication(selectedJournal, selectedAuthor, textBoxTitle.Text, textBoxLocation.Text, textBoxName.Text, dateTimePickerDate.Value, textBoxPages.Text);
+            if (valid)
+            {
+                _presetnerPublication.UpdateReposotiry(selectedJournal, selectedAuthor, textBoxTitle.Text, textBoxLocation.Text, textBoxName.Text, dateTimePickerDate.Value, textBoxPages.Text);
+                return true;
+            }
+            return false;
+        }
+
+        private bool buttonUpdate_Click_Newspaper(Author selectedAuthor)
+        {
+            var selectedNewspaper = _newspaperListForIndex[SelectedIndexPublication];
+
+            bool valid = _validation.ValidationDataPublication(selectedNewspaper, selectedAuthor, textBoxTitle.Text, textBoxLocation.Text, textBoxName.Text, dateTimePickerDate.Value);
+            if (valid)
+            {
+                _presetnerPublication.UpdateReposotiry(selectedNewspaper, selectedAuthor, textBoxTitle.Text, textBoxLocation.Text, textBoxName.Text, dateTimePickerDate.Value);
+                return true;
+            }
+            return false;
         }
 
         private void buttonDelete_Click(object sender, EventArgs e)
         {
-            if (SelectedIndex != (int)EnumPublicationForm.NoSelectedIndex)
+            if (listBoxPublicationForm.SelectedIndex == default(int) || listBoxPublicationForm.SelectedIndex == (int)EnumPublicationForm.NoSelectedIndex)
             {
-                _presetnerPublication.Delete(SelectedIndex);
-                SelectedIndex = (int)EnumPublicationForm.NoSelectedIndex;
+                return;
             }
+
+            if (EnumPublicationForm.Book.ToString() == _currentPublication)
+            {
+                buttonDelete_Click_Book();
+            }
+
+            if (EnumPublicationForm.Journal.ToString() == _currentPublication)
+            {
+                buttonDelete_Click_Journal();
+            }
+
+            if (EnumPublicationForm.Newspaper.ToString() == _currentPublication)
+            {
+                buttonDelete_Click_Newspaper();
+            }
+        }
+
+        private void buttonDelete_Click_Book()
+        {
+            var selectedBook = _bookListForIndex[SelectedIndexPublication];
+            _presetnerPublication.Delete(selectedBook);
+
+            SelectedIndexPublication = (int)EnumPublicationForm.NoSelectedIndex;
+            _presetnerPublication.FillListBoxPublication();
+        }
+
+        private void buttonDelete_Click_Journal()
+        {
+            var selectedJournal = _journalListForIndex[SelectedIndexPublication];
+            _presetnerPublication.Delete(selectedJournal);
+
+            SelectedIndexPublication = (int)EnumPublicationForm.NoSelectedIndex;
+            _presetnerPublication.FillListBoxPublication();
+        }
+
+        private void buttonDelete_Click_Newspaper()
+        {
+            var selectedNewspaper = _newspaperListForIndex[SelectedIndexPublication];
+            _presetnerPublication.Delete(selectedNewspaper);
+
+            SelectedIndexPublication = (int)EnumPublicationForm.NoSelectedIndex;
+            _presetnerPublication.FillListBoxPublication();
         }
 
         private void buttonNewAuthor_Click(object sender, EventArgs e)

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using WFViewListBooksJournals.Entities;
 using WFViewListBooksJournals.Models.Repositories;
 using WFViewListBooksJournals.Views.Interfaces;
 
@@ -7,16 +8,14 @@ namespace WFViewListBooksJournals.Presenters.Infrastructure
     public class PresetnerAuthorForm
     {
         private IAuthorForm _authorForm;
-        private UnitOfWork _unitOfWork;
-        private Validation ValidationClass { get; set; }
+        private AuthorRepository _authorRepository;
         private Dictionary<string, bool> Nationality { get; set; }
 
-        public PresetnerAuthorForm(IAuthorForm authorForm, string connectionString)
+        public PresetnerAuthorForm(IAuthorForm authorForm)
         {
             _authorForm = authorForm;
-            _unitOfWork = new UnitOfWork(connectionString);
-
-            ValidationClass = new Validation();
+            _authorRepository = AuthorRepository.Instance;
+            
             Nationality = new Dictionary<string, bool>() {
                 { "ru", false },
                 { "us", true }
@@ -27,47 +26,15 @@ namespace WFViewListBooksJournals.Presenters.Infrastructure
         {
             _authorForm.InitializeComponentAuthorForm(Nationality);
         }
-        
-        public bool Save(string firstName, string secondName, string lastName, string age, string nationality)
+
+        public bool ExistAuthor(Author author)
         {
-            bool valid = false;
-
-            valid = ValidationClass.NullField(firstName, secondName, lastName, nationality);
-            if (valid)
-            {
-                return false;
-            }
-
-            bool initialsOption = Nationality[nationality];
-
-            if (age == string.Empty)
-            {
-                valid = ValidationClass.CheckCorrectnessDataAuthor(firstName, secondName, lastName);
-            }
-
-            if (age != string.Empty)
-            {
-                valid = ValidationClass.CheckCorrectnessDataAuthor(firstName, secondName, lastName, age);
-            }
-            
-            if (valid)
-            {
-                return false;
-            }
-
-            valid = CompareInsertValueFields(firstName, secondName, lastName, age, initialsOption);
-            if (valid)
-            {
-                return false;
-            }
-            _unitOfWork.Author.Add(firstName, secondName, lastName, age, initialsOption);
-
-            return true;
+            return _authorRepository.ExistAuthor(author);
         }
 
-        private bool CompareInsertValueFields(string firstName, string secondName, string lastName, string age, bool initialsOption)
+        public void Save(Author author)
         {
-            return _unitOfWork.Author.Find(firstName, secondName, lastName, age, initialsOption);            
+            _authorRepository.Add(author);
         }
     }
 }

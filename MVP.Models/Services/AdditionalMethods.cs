@@ -3,24 +3,41 @@ using WFViewListBooksJournals.Entities;
 
 namespace WFViewListBooksJournals.Models.Services
 {
-    public static class AdditionalMethods
+    public class AdditionalMethods
     {
-        public static string GetStringAuthors(this ICollection<Author> listAuthors)
+        private static AdditionalMethods _instance;
+
+        private AdditionalMethods() { }
+
+        public static AdditionalMethods Instance
         {
-            string authors = string.Empty;
-            foreach (Author author in listAuthors)
+            get
             {
-                authors += author.GetStringAuthor();
+                if (_instance == null)
+                {
+                    _instance = new AdditionalMethods();
+                }
+                return _instance;
             }
-            return authors;
         }
 
-        public static string GetStringAuthor(this Author author)
+        public string GetStringAuthor(Author author)
         {
             string tempAuthor = string.Empty;
             tempAuthor += author.InitialsOption ? author.FirstName + author.LastName + " " + author.SecondName : author.SecondName + " " + author.FirstName + author.LastName;
             tempAuthor += author.Age == default(int) ? string.Empty : " " + author.Age.ToString();
             return tempAuthor;
+        }
+
+        public string GetStringAuthorList(ICollection<Author> listAuthors)
+        {
+            string authors = string.Empty;
+            foreach (Author author in listAuthors)
+            {
+                string stringAuthor = GetStringAuthor(author);
+                authors += stringAuthor;
+            }
+            return authors;
         }
     }
 }

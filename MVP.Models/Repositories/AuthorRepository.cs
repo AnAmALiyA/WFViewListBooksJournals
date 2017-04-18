@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Linq;
 using System.Collections.Generic;
 using WFViewListBooksJournals.Entities;
 
@@ -6,50 +6,74 @@ namespace WFViewListBooksJournals.Models.Repositories
 {
     public class AuthorRepository
     {
-        public static List<Author> ListAuthor { get; set; }
-        public AuthorRepository(AllLiterary allLiterary)
+        private static AuthorRepository _instance;
+        private DataBase _dataBase;
+        
+        public static AuthorRepository Instance
         {
-            ListAuthor = GetListAuthor(allLiterary.Authors);
-        }
-        private List<Author> GetListAuthor(Dictionary<string, Author> entities)
-        {
-            List<Author> tempList = new List<Author>();
-            foreach (Author item in entities.Values)
+            get
             {
-                tempList.Add(item);
+                if (_instance == null)
+                {
+                    _instance = new AuthorRepository();
+                }
+                return _instance;
             }
-            return tempList;
         }
+
+        private AuthorRepository()
+        {
+            _dataBase = DataBase.Instance;
+        }
+
         public List<Author> GetAll()
         {
-            return ListAuthor;
+            var tempIEnumerableAuthor = _dataBase.Authors.Select(x=>x.Value);
+
+            List<Author> tempListAuthor = new List<Author>();
+            tempListAuthor.AddRange(tempIEnumerableAuthor);
+
+            return tempListAuthor;
+        }
+        
+        public void Add(Author author)
+        {
+            string name = GenerateName(author.SecondName, default(int));
+            _dataBase.Authors.Add(name, author);
         }
 
-        public bool Find(string firstName, string secondName, string lastName, string age, bool nationality)
+        public bool ExistAuthor(Author author)
         {
-            if (age == string.Empty)
+            var tempListAuthor = GetAll();
+            Author findAuthor = tempListAuthor.Find(a => a == author);
+            if (findAuthor == null)
             {
-                age = default(int).ToString();
+                return false;
             }
+            return true;
+        }
 
-            foreach (Author author in ListAuthor)
+        private string GenerateName(string name, int number)
+        {
+            if (number == default(int))
             {
-                if (author.FirstName == firstName & author.SecondName == secondName & author.LastName == lastName & author.Age == Int32.Parse(age) & author.InitialsOption == nationality)
+                bool exist = _dataBase.Authors.ContainsKey(name);
+                if (!exist)
                 {
-                    return true;
+                    return name;
                 }
             }
-            return false;
+
+            string tempName = name + number.ToString();
+            Author findAuthor = _dataBase.Authors[tempName];
+            if (findAuthor == null)
+            {
+                return name;
+            }
+
+            number++;
+            return GenerateName(name, number);
         }
 
-        public void Add(string firstName, string secondName, string lastName, string age, bool initialsOption)
-        {
-            if (age==string.Empty)
-            {
-                age = default(int).ToString();
-            }
-            Author author = new Author() { FirstName = firstName, SecondName = secondName, LastName = lastName, Age = Int32.Parse(age), InitialsOption = initialsOption };
-            ListAuthor.Add(author);
-        }
     }
 }

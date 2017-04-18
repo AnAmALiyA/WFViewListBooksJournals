@@ -4,24 +4,37 @@ using WFViewListBooksJournals.Entities;
 
 namespace WFViewListBooksJournals.Models.Repositories
 {
-    public class AllLiterary
+    public class DataBase
     {
+        private static DataBase _instace;
         public Dictionary<string, Author> Authors { get; set; }
         public HashSet<Book> Books { get; set; }
         public HashSet<Journal> Journals { get; set; }
         public HashSet<Newspaper> Newspapers { get; set; }
 
-        public AllLiterary()
+        private DataBase()
         {
             Authors = FillAuthors();
             Books = FillBooks();
             Journals = FillJournals();
             Newspapers = FillNewspapers();
         }
+        
+        public static DataBase Instance
+        {
+            get
+            {
+                if (_instace == null)
+                {
+                    _instace = new DataBase();
+                }
+                return _instace;
+            }
+        }
 
         private Dictionary<string, Author> FillAuthors()
         {
-            Dictionary<string, Author> authors = new Dictionary<string, Author>();            
+            Dictionary<string, Author> authors = new Dictionary<string, Author>();
 
             authors.Add("Rihter", new Author { FirstName = "Дж.", SecondName = "Рихтер", InitialsOption = true });
 
@@ -85,28 +98,28 @@ namespace WFViewListBooksJournals.Models.Repositories
             HashSet<Journal> journals = new HashSet<Journal>();
 
             HashSet<Article> article = new HashSet<Article>();
-                article.Add(new Article { Authors = new HashSet<Author>() { Authors["Holodnaya"] }, Title = "Когнитивный стиль как квадриполярное измерение.", Location = "46–56" });
-                article.Add(new Article { Authors = new HashSet<Author>() { Authors["Holodnaya"] }, Title = "Когнитивный стиль как квадриполярное измерение. 2", Location = "46–56" });
+            article.Add(new Article { Authors = new HashSet<Author>() { Authors["Holodnaya"] }, Title = "Когнитивный стиль как квадриполярное измерение.", Location = "46–56" });
+            article.Add(new Article { Authors = new HashSet<Author>() { Authors["Holodnaya"] }, Title = "Когнитивный стиль как квадриполярное измерение. 2", Location = "46–56" });
             journals.Add(new Journal { Articles = article, Name = "Психологический журнал.", Date = new DateTime(2000, 1, 1), NumberIssue = "21(4)" });
 
             HashSet<Article> articleZero = new HashSet<Article>();
-                articleZero.Add(new Article { Authors = new HashSet<Author>() { Authors["Prusakova"], Authors["Sergienko"] }, Title = "Понимание эмоций детьми дошкольного возраста.", Location = "24–35" });
-                articleZero.Add(new Article { Authors = new HashSet<Author>() { Authors["Prusakova"], Authors["Sergienko"] }, Title = "Понимание эмоций детьми дошкольного возраста. 2", Location = "24–35" });
+            articleZero.Add(new Article { Authors = new HashSet<Author>() { Authors["Prusakova"], Authors["Sergienko"] }, Title = "Понимание эмоций детьми дошкольного возраста.", Location = "24–35" });
+            articleZero.Add(new Article { Authors = new HashSet<Author>() { Authors["Prusakova"], Authors["Sergienko"] }, Title = "Понимание эмоций детьми дошкольного возраста. 2", Location = "24–35" });
             journals.Add(new Journal { Articles = articleZero, Name = "Вопросы психологии.", Date = new DateTime(2006, 1, 1), NumberIssue = "No. 4" });
 
             HashSet<Article> articleOne = new HashSet<Article>();
-                articleOne.Add(new Article { Authors = new HashSet<Author>() { Authors["DAddato"] }, Title = "Secular trends in twinning rates.", Location = "147–151" });
-                articleOne.Add(new Article { Authors = new HashSet<Author>() { Authors["DAddato"] }, Title = "Secular trends in twinning rates. 2", Location = "147–151" });
+            articleOne.Add(new Article { Authors = new HashSet<Author>() { Authors["DAddato"] }, Title = "Secular trends in twinning rates.", Location = "147–151" });
+            articleOne.Add(new Article { Authors = new HashSet<Author>() { Authors["DAddato"] }, Title = "Secular trends in twinning rates. 2", Location = "147–151" });
             journals.Add(new Journal { Articles = articleOne, Name = "Journal of Biosocial Science.", Date = new DateTime(2007, 1, 1), NumberIssue = "39(1)" });
 
             HashSet<Article> articleTwo = new HashSet<Article>();
-                articleTwo.Add(new Article { Authors = new HashSet<Author>() { Authors["Barlow"] }, Title = "Diagnoses, dimensions, and DSM-IV[Special issue].", Location = "300–453" });
-                articleTwo.Add(new Article { Authors = new HashSet<Author>() { Authors["Barlow"] }, Title = "Diagnoses, dimensions, and DSM-IV[Special issue]. 2", Location = "300–453" });
+            articleTwo.Add(new Article { Authors = new HashSet<Author>() { Authors["Barlow"] }, Title = "Diagnoses, dimensions, and DSM-IV[Special issue].", Location = "300–453" });
+            articleTwo.Add(new Article { Authors = new HashSet<Author>() { Authors["Barlow"] }, Title = "Diagnoses, dimensions, and DSM-IV[Special issue]. 2", Location = "300–453" });
             journals.Add(new Journal { Articles = articleTwo, Name = "Journal of Abnormal Psychology", Date = new DateTime(1991, 1, 1), NumberIssue = "100(3)" });
 
             HashSet<Article> articleThree = new HashSet<Article>();
-                articleThree.Add(new Article { Authors = new HashSet<Author>() { Authors["Chuprikova"] }, Title = "На пути к материалистическому решению психофизической проблемы.", Location = "110–121" });
-                articleThree.Add(new Article { Authors = new HashSet<Author>() { Authors["Chuprikova"] }, Title = "На пути к материалистическому решению психофизической проблемы. 2", Location = "110–121" });
+            articleThree.Add(new Article { Authors = new HashSet<Author>() { Authors["Chuprikova"] }, Title = "На пути к материалистическому решению психофизической проблемы.", Location = "110–121" });
+            articleThree.Add(new Article { Authors = new HashSet<Author>() { Authors["Chuprikova"] }, Title = "На пути к материалистическому решению психофизической проблемы. 2", Location = "110–121" });
             journals.Add(new Journal { Articles = articleThree, Name = "От дуализма Декарта к монизму Спинозы. Вопросы философии", Date = new DateTime(2010, 1, 1), NumberIssue = "No. 10" });
 
             return journals;
@@ -117,23 +130,23 @@ namespace WFViewListBooksJournals.Models.Repositories
             HashSet<Newspaper> newspapers = new HashSet<Newspaper>();
 
             HashSet<Article> article = new HashSet<Article>();
-                article.Add(new Article { Authors = new HashSet<Author>() { Authors["Dubovik"] }, Title = "Молодые леса зелены", Location = "8" });
-                article.Add(new Article { Authors = new HashSet<Author>() { Authors["Dubovik"] }, Title = "Молодые леса зелены 2", Location = "8" });
+            article.Add(new Article { Authors = new HashSet<Author>() { Authors["Dubovik"] }, Title = "Молодые леса зелены", Location = "8" });
+            article.Add(new Article { Authors = new HashSet<Author>() { Authors["Dubovik"] }, Title = "Молодые леса зелены 2", Location = "8" });
             newspapers.Add(new Newspaper { Articles = article, Name = "Рэспубліка.", Date = new DateTime(2005, 2, 19) });
 
             HashSet<Article> articleOne = new HashSet<Article>();
-                articleOne.Add(new Article { Authors = new HashSet<Author>() { Authors["Nikolaeva"] }, Title = "Будем читать. Глядишь, и кризис пройдет…", Location = "9" });
-                articleOne.Add(new Article { Authors = new HashSet<Author>() { Authors["Nikolaeva"] }, Title = "Будем читать. Глядишь, и кризис пройдет… 2", Location = "9" });
+            articleOne.Add(new Article { Authors = new HashSet<Author>() { Authors["Nikolaeva"] }, Title = "Будем читать. Глядишь, и кризис пройдет…", Location = "9" });
+            articleOne.Add(new Article { Authors = new HashSet<Author>() { Authors["Nikolaeva"] }, Title = "Будем читать. Глядишь, и кризис пройдет… 2", Location = "9" });
             newspapers.Add(new Newspaper { Articles = articleOne, Name = "Северный комсомолец.", Date = new DateTime(2009, 4, 13) });
 
             HashSet<Article> articleTwo = new HashSet<Article>();
-                articleTwo.Add(new Article { Authors = new HashSet<Author>() { Authors["Risev"] }, Title = "Приоритет – экология", Location = "13-14" });
-                articleTwo.Add(new Article { Authors = new HashSet<Author>() { Authors["Risev"] }, Title = "Приоритет – экология 2", Location = "13-14" });
+            articleTwo.Add(new Article { Authors = new HashSet<Author>() { Authors["Risev"] }, Title = "Приоритет – экология", Location = "13-14" });
+            articleTwo.Add(new Article { Authors = new HashSet<Author>() { Authors["Risev"] }, Title = "Приоритет – экология 2", Location = "13-14" });
             newspapers.Add(new Newspaper { Articles = articleTwo, Name = "Волна.", Date = new DateTime(2004, 4, 4) });
 
             HashSet<Article> articleThree = new HashSet<Article>();
-                articleThree.Add(new Article { Authors = new HashSet<Author>() { Authors["RisevB"] }, Title = "Приоритет – экология 3", Location = "13-14" });
-                articleThree.Add(new Article { Authors = new HashSet<Author>() { Authors["RisevB"] }, Title = "Приоритет – экология 4", Location = "13-14" });
+            articleThree.Add(new Article { Authors = new HashSet<Author>() { Authors["RisevB"] }, Title = "Приоритет – экология 3", Location = "13-14" });
+            articleThree.Add(new Article { Authors = new HashSet<Author>() { Authors["RisevB"] }, Title = "Приоритет – экология 4", Location = "13-14" });
             newspapers.Add(new Newspaper { Articles = articleThree, Name = "Волна.", Date = new DateTime(2004, 4, 4) });
 
             return newspapers;

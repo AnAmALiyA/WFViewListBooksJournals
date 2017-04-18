@@ -183,6 +183,7 @@
             this.Name = "AuthorForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "New Author";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.BeforeClosed);
             this.ResumeLayout(false);
             this.PerformLayout();
 

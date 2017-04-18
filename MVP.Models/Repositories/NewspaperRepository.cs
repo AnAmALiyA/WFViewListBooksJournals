@@ -4,29 +4,63 @@ using WFViewListBooksJournals.Entities;
 using System.Linq;
 using System;
 using WFViewListBooksJournals.Models.Services;
+using System.IO;
 
 namespace WFViewListBooksJournals.Models.Repositories
 {
     public class NewspaperRepository
     {
-        private static IEnumerable<Newspaper> ListEntities { get; set; }
-        private UnitOfWork _unitOfWork;
+        private static NewspaperRepository _instance;
+        private DataBase _dataBase;
+        private AdditionalMethods _additionalMethods;
 
-        public NewspaperRepository(AllLiterary allLiterary, UnitOfWork unitOfWork)
+        public NewspaperRepository()
         {
-            ListEntities = allLiterary.Newspapers as IEnumerable<Newspaper>;
-            _unitOfWork = unitOfWork;
+            _dataBase = DataBase.Instance;
+            _additionalMethods = AdditionalMethods.Instance;
         }
 
-        public IEnumerable<Newspaper> GetAll()
+        public static NewspaperRepository Instance
         {
-            return ListEntities;
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = new NewspaperRepository();
+                }
+                return _instance;
+            }
+        }
+
+        public List<Newspaper> GetAll()
+        {
+            List<Newspaper> tempListNewspaper = new List<Newspaper>();
+            var newspapers = _dataBase.Newspapers;
+            tempListNewspaper.AddRange(newspapers);
+            return tempListNewspaper;
         }
 
         public void Save()
         {
-            string file = "Newspapers.xml";
-            XmlTextWriter writer = new XmlTextWriter(file, null)
+            string fileXML = "Newspapers.xml";
+
+            ExistFile(fileXML);
+            CreateSaveFile(fileXML);
+        }
+
+        private void ExistFile(string fileXML)
+        {
+            FileInfo fileInfo = new FileInfo(fileXML);
+
+            if (fileInfo.Exists == true)
+            {
+                fileInfo.Delete();
+            }
+        }
+
+        private void CreateSaveFile(string fileXML)
+        {
+            XmlTextWriter writer = new XmlTextWriter(fileXML, null)
             {
                 Formatting = Formatting.Indented,
                 IndentChar = '\t',
@@ -37,14 +71,17 @@ namespace WFViewListBooksJournals.Models.Repositories
             writer.WriteStartDocument();
             writer.WriteStartElement("ListOfNewspaper");
 
-            foreach (Newspaper newspaper in ListEntities)
+            foreach (Newspaper newspaper in _dataBase.Newspapers)
             {
                 writer.WriteStartElement("Newspaper");
                 foreach (Article article in newspaper.Articles)
                 {
                     writer.WriteStartElement("Article");
                     writer.WriteStartElement("Author");
-                    writer.WriteString(article.Authors.GetStringAuthors());
+
+                    string stringAuthors = _additionalMethods.GetStringAuthorList(article.Authors);
+
+                    writer.WriteString(stringAuthors);
                     writer.WriteEndElement();
                     writer.WriteStartElement("ArticleTitle");
                     writer.WriteString(article.Title);
@@ -65,153 +102,89 @@ namespace WFViewListBooksJournals.Models.Repositories
             }
             writer.Close();
         }
-
-        public bool Find(string author, string namePublication, DateTime date, string title, string location)
+        
+        public void Create(Author selectedAuthor, string title, string location, string namePublication, DateTime date)
         {
+            List<Author> collectionAuthor = new List<Author>();
+            collectionAuthor.Add(selectedAuthor);
 
-            foreach (var newspaper in ListEntities)
-            {
-                if (newspaper.Name != namePublication & newspaper.Date != date)
-                {
-                    continue;
-                }
-                bool flag = FindArticleAuthor(newspaper.Articles, author, title, location);
-                if (flag)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private bool FindArticleAuthor(ICollection<Article> articles, string author, string title, string location)
-        {
-            foreach (var article in articles)
-            {
-                if (article.Title != title & article.Location != location)
-                {
-                    continue;
-                }
-                foreach (var item in article.Authors)
-                {
-                    if (item.GetStringAuthor() != author)
-                    {
-                        continue;
-                    }
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public void Create(string author, string name, DateTime date, string title, string location)
-        {
-            ICollection<Author> collectionAuthor = new List<Author>();
-            Author itemAuthor = _unitOfWork.Author.GetAll().Find(x => x.GetStringAuthor() == author);
-            collectionAuthor.Add(itemAuthor);
-
-            ICollection<Article> collectionArticle = new List<Article>();
+            List<Article> collectionArticles = new List<Article>();
             Article itemArticle = new Article() { Authors = collectionAuthor, Title = title, Location = location };
-            collectionArticle.Add(itemArticle);
+            collectionArticles.Add(itemArticle);
 
-            ICollection<Newspaper> newspapers = ListEntities as ICollection<Newspaper>;
-            newspapers.Add(new Newspaper() { Articles = collectionArticle, Name = name, Date = date });
-            ListEntities = newspapers;
+            var newspaper = new Newspaper() { Articles = collectionArticles, Name = namePublication, Date = date };
+            _dataBase.Newspapers.Add(newspaper);
         }
-
-        public void Udate(Newspaper changeableNewspaper, string author, string name, DateTime date, string title, string location, int selected)
+        
+        public void Update(Newspaper selectedNewspaper, Author selectedAuthor, string title, string location, string namePublication, DateTime date)
         {
-            var newspapers = GetAll().ToList();
-            for (int i = 0; i < newspapers.Count; i++)
+            var newspaperDB = _dataBase.Newspapers;
+            var selectedNewspaperArticle = selectedNewspaper.Articles.First();
+
+            foreach (var newspaper in newspaperDB)
             {
-                if (newspapers[i].Name != changeableNewspaper.Name || newspapers[i].Date != changeableNewspaper.Date)
+                if (newspaper.Name == selectedNewspaper.Name && newspaper.Date == selectedNewspaper.Date)
                 {
-                    continue;
+                    UpdateArticle(selectedNewspaperArticle, newspaper, selectedAuthor, newspaperDB, title, location, namePublication, date);
+
+                    newspaper.Name = namePublication;
+                    newspaper.Date = date;
+                    break;
                 }
-                newspapers[i] = UdateArticle(newspapers[i], changeableNewspaper, author, name, date, title, location);
-                break;
             }
-            ListEntities = newspapers as ICollection<Newspaper>;
+            _dataBase.Newspapers = newspaperDB;
         }
 
-        private Newspaper UdateArticle(Newspaper newspaper, Newspaper changeableJournal, string author, string name, DateTime date, string title, string location)
+        private void UpdateArticle(Article selectedJournalArticle, Newspaper journal, Author selectedAuthor, HashSet<Newspaper> journalDB, string title, string location, string namePublication, DateTime date)
         {
-            var udateArticles = newspaper.Articles.ToList();
-            var changeableArticles = changeableJournal.Articles.ToList();
-
-            for (int j = 0; j < newspaper.Articles.Count; j++)
+            foreach (var article in journal.Articles)
             {
-                if (udateArticles[j].Title != changeableArticles[default(int)].Title || udateArticles[j].Location != changeableArticles[default(int)].Location)
+                if (article.Equals(selectedJournalArticle))
                 {
-                    continue;
-                }
+                    article.Title = title;
+                    article.Location = location;
 
-                bool existAuthor = false;
-                foreach (Author itemAuthor in changeableArticles[default(int)].Authors)
-                {
-                    if (itemAuthor.GetStringAuthor() == author)
+                    Author exist = article.Authors.First(a => a == selectedAuthor);
+                    if (exist == null)
                     {
-                        existAuthor = true;
+                        article.Authors.Add(selectedAuthor);
                     }
-                }
-
-                if (!existAuthor)
-                {
-                    Author newAuthor = _unitOfWork.Author.GetAll().Find(a => a.GetStringAuthor() == author);
-                    udateArticles[j].Authors.Add(newAuthor);
-                }
-
-                udateArticles[j].Title = title;
-                udateArticles[j].Location = location;
-
-                newspaper.Name = name;
-                newspaper.Date = date;
-                return newspaper;
-            }
-            return newspaper;
-        }
-
-        public void Delete(Newspaper newspaper)
-        {
-            var newspapers = GetAll().ToList();
-            for (int i = 0; i < newspapers.Count; i++)
-            {
-                if (newspapers[i].Name == newspaper.Name & newspapers[i].Date == newspaper.Date)
-                {
-                    var articles = newspapers[i].Articles as List<Article>;
-                    var baseArticles = newspaper.Articles as List<Article>;
-
-                    newspapers = DeleteArticle(newspapers, newspaper, articles, baseArticles, i);
-                    ListEntities = newspapers as ICollection<Newspaper>;
                     return;
                 }
             }
         }
 
-        private List<Newspaper> DeleteArticle(List<Newspaper> newspapers, Newspaper newspaper, List<Article> articles, List<Article> baseArticles, int i)
+        public void Delete(Newspaper newspaperDelete)
         {
-            for (int j = 0; j < articles.Count; j++)
+            var newspaperDB = _dataBase.Newspapers;
+            var articleDelete = newspaperDelete.Articles.First();           
+
+            foreach (var newspaper in newspaperDB)
             {
-                for (int z = 0; z < baseArticles.Count; z++)
+                if (newspaper.Name == newspaperDelete.Name && newspaper.Date == newspaperDelete.Date)
                 {
-                    DeleteArticleInFor(newspapers, articles, baseArticles, j, z, i);                    
+                    DeleteArticle(newspaper, articleDelete, newspaperDB);
+                    break;
                 }
             }
-            return newspapers;
+            _dataBase.Newspapers = newspaperDB;
         }
 
-        private List<Newspaper> DeleteArticleInFor(List<Newspaper> newspapers, List<Article> articles, List<Article> baseArticles, int j, int z, int i)
+        private void DeleteArticle(Newspaper newspaper, Article articleDelete, HashSet<Newspaper> newspaperDB)
         {
-            if (articles[j].Title == baseArticles[z].Title & articles[j].Location == baseArticles[z].Location)
+            foreach (var article in newspaper.Articles)
             {
-                articles.RemoveAt(j);
-                if (articles.Count == default(int))
+                if (article.Equals(articleDelete))
                 {
-                    newspapers.RemoveAt(i);
-                    return newspapers;
-                }
+                    newspaper.Articles.Remove(article);
+                    int countArticle = newspaper.Articles.Count();
+                    if (countArticle <= default(int))
+                    {
+                        newspaperDB.Remove(newspaper);
+                    }
+                    return;
+                }                
             }
-            return newspapers;
-        }
+        }        
     }
 }

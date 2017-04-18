@@ -10,193 +10,155 @@ namespace WFViewListBooksJournals.Models.Repositories
 {
     public class JournalRepository
     {
-        private static IEnumerable<Journal> ListEntities { get; set; }
-        private UnitOfWork _unitOfWork;
+        private static JournalRepository _instance;
+        private DataBase _dataBase;
+        private AdditionalMethods _additionalMethods;
 
-        public JournalRepository(AllLiterary allLiterary, UnitOfWork unitOfWork)
+        public JournalRepository()
         {
-            ListEntities = allLiterary.Journals as IEnumerable<Journal>;
-            _unitOfWork = unitOfWork;
+            _dataBase = DataBase.Instance;
+            _additionalMethods = AdditionalMethods.Instance;
         }
 
-        public IEnumerable<Journal> GetAll()
+        public static JournalRepository Instance
         {
-            return ListEntities;
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = new JournalRepository();
+                }
+                return _instance;
+            }
+        }
+
+        public List<Journal> GetAll()
+        {
+            List<Journal> tempListJornal = new List<Journal>();
+            var journals = _dataBase.Journals;
+            tempListJornal.AddRange(journals);
+            return tempListJornal;
         }
 
         public void Save()
         {
-            string fileTxt = "Journal.txt";
+            string fileText = "Journal.txt";
 
-            FileInfo fileInfo = new FileInfo(fileTxt);
+            ExistFile(fileText);
+            CreateSaveFile(fileText);
+        }
+
+        private void ExistFile(string fileText)
+        {
+            FileInfo fileInfo = new FileInfo(fileText);
 
             if (fileInfo.Exists == true)
             {
                 fileInfo.Delete();
             }
+        }
 
-            using (FileStream file = new FileStream(fileTxt, FileMode.Create, FileAccess.ReadWrite))
+        private void CreateSaveFile(string fileText)
+        {
+            using (FileStream file = new FileStream(fileText, FileMode.Create, FileAccess.ReadWrite))
             using (StreamWriter writer = new StreamWriter(file, Encoding.GetEncoding(1251)))
             {
-                foreach (Journal journal in ListEntities)
+                foreach (Journal journal in _dataBase.Journals)
                 {
                     writer.WriteLine("Name={0}, Date={1}, Number Issue={2}", journal.Name, journal.Date.ToString("D"), journal.NumberIssue);
                     foreach (Article article in journal.Articles)
                     {
-                        writer.WriteLine("\tAuthor={0}, Title={1}, Location={2}", article.Authors.GetStringAuthors(), article.Title, article.Location);
+                        string stringAuthors = _additionalMethods.GetStringAuthorList(article.Authors);
+                        writer.WriteLine("\tAuthor={0}, Title={1}, Location={2}", stringAuthors, article.Title, article.Location);
                     }
                     writer.WriteLine();
                 }
             }
         }
-
-        public bool Find(string author, string namePublication, string numberIssue, DateTime date, string title, string location)
+        
+        public void Create(Author selectedAuthor, string title, string location, string namePublication, DateTime date, string numberIssue)
         {
-            foreach (var journal in ListEntities)
-            {
-                if (journal.Name != namePublication & journal.Date != date & journal.NumberIssue != numberIssue)
-                {
-                    continue;
-                }
-                bool flag = FindArticleAuthor(journal.Articles, author, title, location);
-                if (flag)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
+            List<Author> collectionAuthor = new List<Author>();            
+            collectionAuthor.Add(selectedAuthor);
 
-        private bool FindArticleAuthor(ICollection<Article> articles, string author, string title, string location)
-        {
-            foreach (var article in articles)
-            {
-                if (article.Title != title & article.Location != location)
-                {
-                    continue;
-                }
-                foreach (var item in article.Authors)
-                {
-                    if (item.GetStringAuthor() != author)
-                    {
-                        continue;
-                    }
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public void Create(string author, string name, string numberIssue, DateTime date, string title, string location)
-        {
-            ICollection<Author> collectionAuthor = new List<Author>();
-            Author itemAuthor = _unitOfWork.Author.GetAll().Find(x => x.GetStringAuthor() == author);
-            collectionAuthor.Add(itemAuthor);            
-
-            ICollection<Article> collectionArticles = new List<Article>();
+            List<Article> collectionArticles = new List<Article>();
             Article itemArticle = new Article() { Authors = collectionAuthor, Title = title, Location = location };
             collectionArticles.Add(itemArticle);
 
-            ICollection<Journal> journals = ListEntities as ICollection<Journal>;
-            journals.Add(new Journal() { Articles = collectionArticles, Name = name, Date = date, NumberIssue = numberIssue });
-            ListEntities = journals;
+            var journal = new Journal() { Articles = collectionArticles, Name = namePublication, Date = date, NumberIssue = numberIssue };
+            _dataBase.Journals.Add(journal);
         }
-
-        public void Udate(Journal changeableJournal, string author, string name, string numberIssue, DateTime date, string title, string location, int selected)
+        
+        public void Update(Journal selectedJournal, Author selectedAuthor, string title, string location, string namePublication, DateTime date, string numberIssue)
         {
-            var journals = GetAll().ToList();
-            for (int i = 0; i < journals.Count; i++)
-            {
-                if (journals[i].Name != changeableJournal.Name || journals[i].Date != changeableJournal.Date || journals[i].NumberIssue != changeableJournal.NumberIssue)
-                {
-                    continue;
-                }
+            var journalDB = _dataBase.Journals;
+            var selectedJournalArticle = selectedJournal.Articles.First();
 
-                journals[i] = UdateArticle(journals[i], changeableJournal, author, name, numberIssue, date, title, location);
-                break;
+            foreach (var journal in journalDB)
+            {
+                if (journal.Name == selectedJournal.Name && journal.Date == selectedJournal.Date && journal.NumberIssue == selectedJournal.NumberIssue)
+                {
+                    UpdateArticle(selectedJournalArticle, journal, selectedAuthor, journalDB, title, location, namePublication, date, numberIssue);
+
+                    journal.Name = namePublication;
+                    journal.Date = date;
+                    journal.NumberIssue = numberIssue;
+                    break;
+                }
             }
-            ListEntities = journals as ICollection<Journal>;
+            _dataBase.Journals = journalDB;
         }
 
-        private Journal UdateArticle(Journal journal, Journal changeableJournal, string author, string name, string numberIssue, DateTime date, string title, string location)
+        private void UpdateArticle(Article selectedJournalArticle, Journal journal, Author selectedAuthor, HashSet<Journal> journalDB, string title, string location, string namePublication, DateTime date, string numberIssue)
         {
-            List<Article> udateArticles = journal.Articles.ToList();
-            var changeableArticles = changeableJournal.Articles.ToList();
-
-            for (int j = 0; j < journal.Articles.Count; j++)
+            foreach (var article in journal.Articles)
             {
-                if (udateArticles[j].Title != changeableArticles[default(int)].Title || udateArticles[j].Location != changeableArticles[default(int)].Location)
+                if (article.Equals(selectedJournalArticle))
                 {
-                    continue;
-                }
+                    article.Title = title;
+                    article.Location = location;
 
-                bool existAuthor = false;
-                foreach (Author itemAuthor in changeableArticles[default(int)].Authors)
-                {
-                    if (itemAuthor.GetStringAuthor() == author)
+                    Author exist = article.Authors.First(a=>a == selectedAuthor);
+                    if (exist == null)
                     {
-                        existAuthor = true;
+                        article.Authors.Add(selectedAuthor);
                     }
-                }
-
-                if (!existAuthor)
-                {
-                    Author newAuthor = _unitOfWork.Author.GetAll().Find(a => a.GetStringAuthor() == author);
-                    udateArticles[j].Authors.Add(newAuthor);
-                }
-
-                udateArticles[j].Title = title;
-                udateArticles[j].Location = location;
-
-                journal.Name = name;
-                journal.Date = date;
-                journal.NumberIssue = numberIssue;
-                return journal;
+                    return;
+                }                
             }
-            return journal;
         }
 
-        public void Delete(Journal journal)
+        public void Delete(Journal journalDelete)
         {
-            var journals = GetAll().ToList();
-            for (int i = 0; i < journals.Count; i++)
-            {
-                if (journals[i].Name == journal.Name & journals[i].Date == journal.Date & journals[i].NumberIssue == journal.NumberIssue)
-                {
-                    var articles = journals[i].Articles.ToList();
-                    var baseArticles = journal.Articles.ToList();
+            var journalDB = _dataBase.Journals;
+            var articleDelete = journalDelete.Articles.First();
 
-                    journals = DeleteArticle(journals, journal, articles, baseArticles, i);
-                    ListEntities = journals as ICollection<Journal>;
+            foreach (var journal in journalDB)
+            {
+                if (journal.Name == journalDelete.Name && journal.Date == journalDelete.Date && journal.NumberIssue == journalDelete.NumberIssue)
+                {
+                    DeleteArticle(journal, articleDelete, journalDB);
+                    break;
+                }               
+            }
+            _dataBase.Journals = journalDB;
+        }
+
+        private void DeleteArticle(Journal journal, Article articleDelete, HashSet<Journal> journalDB)
+        {
+            foreach (var article in journal.Articles)
+            {
+                if (article.Equals(articleDelete))
+                {
+                    journal.Articles.Remove(article);
+                    int countArticle = journal.Articles.Count();
+                    if (countArticle <= default(int))
+                    {
+                        journalDB.Remove(journal);                        
+                    }
                     return;
                 }
             }
-        }
-
-        private List<Journal> DeleteArticle(List<Journal> journals, Journal journal, List<Article> articles, List<Article> baseArticles, int i)
-        {
-            for (int j = 0; j < articles.Count; j++)
-            {
-                for (int z = 0; z < baseArticles.Count; z++)
-                {
-                    DeleteArticleInFor(journals, articles, baseArticles, j, z, i);                    
-                }
-            }
-            return journals;
-        }
-
-        private List<Journal> DeleteArticleInFor(List<Journal> journals, List<Article> articles, List<Article> baseArticles, int j, int z, int i)
-        {
-            if (articles[j].Title == baseArticles[z].Title & articles[j].Location == baseArticles[z].Location)
-            {
-                articles.RemoveAt(j);
-                if (articles.Count == default(int))
-                {
-                    journals.RemoveAt(i);
-                    return journals;
-                }
-            }
-            return journals;
         }
     }
 }

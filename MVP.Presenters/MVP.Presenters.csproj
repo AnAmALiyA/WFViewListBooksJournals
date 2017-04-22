@@ -41,10 +41,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Infrastructure\PresetnerAuthorForm.cs" />
-    <Compile Include="Infrastructure\PresetnerMainForm.cs" />
-    <Compile Include="Infrastructure\PresetnerPublicationForm.cs" />
+    <Compile Include="AuthorFormPresenter.cs" />
+    <Compile Include="Common\PublicationsType.cs" />
+    <Compile Include="MainFormPresenter.cs" />
+    <Compile Include="PublicationFormPresenter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Common\SystemVariablesPublications.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MVP.Entities\MVP.Entities.csproj">

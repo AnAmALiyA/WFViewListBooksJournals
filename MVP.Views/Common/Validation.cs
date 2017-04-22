@@ -3,7 +3,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using WFViewListBooksJournals.Entities;
 
-namespace WFViewListBooksJournals.Views.Servises
+namespace WFViewListBooksJournals.Views.Common
 {
     public class Validation
     {
@@ -126,14 +126,6 @@ namespace WFViewListBooksJournals.Views.Servises
                 {
                     return true;
                 }
-                //foreach (Author author in selectedBook.Authors)
-                //{
-                //    string stringAuthor = _displayOfData.GetStringAuthor(author);
-                //    if (selectedAuthor == stringAuthor)
-                //    {
-                //        return true;
-                //    }
-                //}
             }
             return false;
         }

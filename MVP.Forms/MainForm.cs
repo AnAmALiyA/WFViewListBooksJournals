@@ -3,17 +3,18 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using WFViewListBooksJournals.Entities;
-using WFViewListBooksJournals.Presenters.Infrastructure;
+using WFViewListBooksJournals.Presenters;
 using WFViewListBooksJournals.Views.Interfaces;
-using WFViewListBooksJournals.Views.Servises;
+using WFViewListBooksJournals.Views.Common;
 using System.Collections;
-using static WFViewListBooksJournals.Presenters.Infrastructure.PresetnerMainForm;
+using WFViewListBooksJournals.Presenters.Common;
+//using static WFViewListBooksJournals.Presenters.MainFormPresenter;
 
 namespace WFViewListBooksJournals.Forms
 {
     public partial class MainForm : Form, IMainForm
     {
-        private PresetnerMainForm _presetnerMain;
+        private MainFormPresenter _presetnerMain;
         private DisplayOfData _displayData;
 
         private List<Author> _authorList;
@@ -27,7 +28,7 @@ namespace WFViewListBooksJournals.Forms
         {
             InitializeComponent();
             
-            _presetnerMain = new PresetnerMainForm(this);
+            _presetnerMain = new MainFormPresenter(this);
             _displayData = DisplayOfData.Instance;           
 
             InitializeComponentMainForm();
@@ -62,7 +63,7 @@ namespace WFViewListBooksJournals.Forms
         
         public void FillListBoxMainBooks(List<string> publication, IEnumerable<Book> bookList)
         {
-            _displayData.FillListBox(listBoxMainForm, publication[(int)EnumPublications.Book]);
+            _displayData.FillListBox(listBoxMainForm, publication[(int)PublicationsType.Book]);
             foreach (var book in bookList)
             {
                 _displayData.FillListBox(listBoxMainForm, book, _bookListForIndex);
@@ -71,7 +72,7 @@ namespace WFViewListBooksJournals.Forms
 
         public void FillListBoxMainJournals(List<string> publication, IEnumerable<Journal> journalList)
         {
-            _displayData.FillListBox(listBoxMainForm, publication[(int)EnumPublications.Journal]);
+            _displayData.FillListBox(listBoxMainForm, publication[(int)PublicationsType.Journal]);
             foreach (var journal in journalList)
             {
                 _displayData.FillListBox(listBoxMainForm, journal, _journalListForIndex);               
@@ -80,7 +81,7 @@ namespace WFViewListBooksJournals.Forms
 
         public void FillListBoxMainNewspapers(List<string> publication, IEnumerable<Newspaper> newspaperList)
         {
-            _displayData.FillListBox(listBoxMainForm, publication[(int)EnumPublications.Newspaper]);
+            _displayData.FillListBox(listBoxMainForm, publication[(int)PublicationsType.Newspaper]);
             foreach (var newspaper in newspaperList)
             {
                 _displayData.FillListBox(listBoxMainForm, newspaper, _newspaperListForIndex);
@@ -151,8 +152,9 @@ namespace WFViewListBooksJournals.Forms
         private void comboBoxAuthors_SelectedIndexChanged(object sender, EventArgs e)
         {
             int authorId = comboBoxAuthors.SelectedIndex;
-            Author author = _authorList[authorId];
-            _presetnerMain.FillListBoxPublicationAuthor(author);
+            //Author author = _authorList[authorId];
+            _presetnerMain.SelectedAuthor = _authorList[authorId];
+            _presetnerMain.FillListBoxPublicationAuthor();
         }
 
         private void comboBoxPublications_SelectedIndexChanged(object sender, EventArgs e)

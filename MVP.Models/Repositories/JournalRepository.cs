@@ -3,7 +3,6 @@ using System.Text;
 using System.Linq;
 using System.Collections.Generic;
 using WFViewListBooksJournals.Entities;
-using WFViewListBooksJournals.Models.Services;
 using System;
 
 namespace WFViewListBooksJournals.Models.Repositories
@@ -11,13 +10,11 @@ namespace WFViewListBooksJournals.Models.Repositories
     public class JournalRepository
     {
         private static JournalRepository _instance;
-        private DataBase _dataBase;
-        private AdditionalMethods _additionalMethods;
+        private MockDataProvider _dataBase;
 
         public JournalRepository()
         {
-            _dataBase = DataBase.Instance;
-            _additionalMethods = AdditionalMethods.Instance;
+            _dataBase = MockDataProvider.Instance;
         }
 
         public static JournalRepository Instance
@@ -68,14 +65,31 @@ namespace WFViewListBooksJournals.Models.Repositories
                     writer.WriteLine("Name={0}, Date={1}, Number Issue={2}", journal.Name, journal.Date.ToString("D"), journal.NumberIssue);
                     foreach (Article article in journal.Articles)
                     {
-                        string stringAuthors = _additionalMethods.GetStringAuthorList(article.Authors);
+                        string stringAuthors = GetStringAuthorList(article.Authors);
                         writer.WriteLine("\tAuthor={0}, Title={1}, Location={2}", stringAuthors, article.Title, article.Location);
                     }
                     writer.WriteLine();
                 }
             }
         }
-        
+        public string GetStringAuthor(Author author)
+        {
+            string tempAuthor = string.Empty;
+            tempAuthor += author.InitialsOption ? author.FirstName + author.LastName + " " + author.SecondName : author.SecondName + " " + author.FirstName + author.LastName;
+            tempAuthor += author.Age == default(int) ? string.Empty : " " + author.Age.ToString();
+            return tempAuthor;
+        }
+
+        public string GetStringAuthorList(List<Author> listAuthors)
+        {
+            string authors = string.Empty;
+            foreach (Author author in listAuthors)
+            {
+                string stringAuthor = GetStringAuthor(author);
+                authors += stringAuthor;
+            }
+            return authors;
+        }
         public void Create(Author selectedAuthor, string title, string location, string namePublication, DateTime date, string numberIssue)
         {
             List<Author> collectionAuthor = new List<Author>();            
@@ -109,7 +123,7 @@ namespace WFViewListBooksJournals.Models.Repositories
             _dataBase.Journals = journalDB;
         }
 
-        private void UpdateArticle(Article selectedJournalArticle, Journal journal, Author selectedAuthor, HashSet<Journal> journalDB, string title, string location, string namePublication, DateTime date, string numberIssue)
+        private void UpdateArticle(Article selectedJournalArticle, Journal journal, Author selectedAuthor, List<Journal> journalDB, string title, string location, string namePublication, DateTime date, string numberIssue)
         {
             foreach (var article in journal.Articles)
             {
@@ -144,7 +158,7 @@ namespace WFViewListBooksJournals.Models.Repositories
             _dataBase.Journals = journalDB;
         }
 
-        private void DeleteArticle(Journal journal, Article articleDelete, HashSet<Journal> journalDB)
+        private void DeleteArticle(Journal journal, Article articleDelete, List<Journal> journalDB)
         {
             foreach (var article in journal.Articles)
             {

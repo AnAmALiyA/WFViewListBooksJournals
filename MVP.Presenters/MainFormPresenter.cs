@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using WFViewListBooksJournals.Entities;
 using WFViewListBooksJournals.Models.Repositories;
+using WFViewListBooksJournals.Presenters.Common;
 using WFViewListBooksJournals.Views.Interfaces;
 
-namespace WFViewListBooksJournals.Presenters.Infrastructure
+namespace WFViewListBooksJournals.Presenters
 {
-    public class PresetnerMainForm
+    public class MainFormPresenter
     {
         private IMainForm _mainForm;
         private AuthorRepository _authorRepository;
@@ -16,9 +17,9 @@ namespace WFViewListBooksJournals.Presenters.Infrastructure
         private NewspaperRepository _newspaperRepository;
 
         private List<string> Publications { get; set; }
-        public enum EnumPublications { Book, Journal, Newspaper, Empty = 0 }
+        public Author SelectedAuthor { get; set; }
 
-        public PresetnerMainForm(IMainForm mainForm)
+        public MainFormPresenter(IMainForm mainForm)
         {
             _mainForm = mainForm;
             _authorRepository = AuthorRepository.Instance;
@@ -26,7 +27,12 @@ namespace WFViewListBooksJournals.Presenters.Infrastructure
             _journalRepository = JournalRepository.Instance;
             _newspaperRepository = NewspaperRepository.Instance;
 
-            Publications = new List<string>() { "Book", "Journal", "Newspaper" };
+            Publications = new List<string>()
+            {
+                PublicationsType.Book.ToString(),
+                PublicationsType.Journal.ToString(),
+                PublicationsType.Newspaper.ToString()
+            };
         }
 
         public void InitializeComponentMainForm()
@@ -35,12 +41,12 @@ namespace WFViewListBooksJournals.Presenters.Infrastructure
             FillComboBoxAllPublications();
             FillListBoxMain();
         }
-        
+
         public void FillComboBoxAllAuthors()
         {
             _mainForm.ClearComboBoxAuthors();
 
-            List<Author> authorsList = _authorRepository.GetAll();            
+            List<Author> authorsList = _authorRepository.GetAll();
             _mainForm.FillComboBoxAuthors(authorsList);
         }
 
@@ -52,7 +58,7 @@ namespace WFViewListBooksJournals.Presenters.Infrastructure
 
         public void FillListBoxMain()
         {
-            List<Book> bookList = _bookRepository.GetAll();            
+            List<Book> bookList = _bookRepository.GetAll();
             List<Journal> journalList = _journalRepository.GetAll();
             List<Newspaper> newspaperList = _newspaperRepository.GetAll();
 
@@ -67,7 +73,8 @@ namespace WFViewListBooksJournals.Presenters.Infrastructure
 
                 var queryJournal = from journal in _journalRepository.GetAll()
                                    from article in journal.Articles
-                                   select article;                
+                                   select article;
+                
                 _mainForm.FillListBoxMain(queryJournal);
 
                 var queryNewspaper = from newpaper in _newspaperRepository.GetAll()
@@ -79,11 +86,11 @@ namespace WFViewListBooksJournals.Presenters.Infrastructure
             {
                 _mainForm.FillListBoxMain(ex.Message);
             }
-        }        
+        }
 
         public void SaveBook()
         {
-           _bookRepository.SaveDB();
+            _bookRepository.SaveDB();
         }
 
         public void SaveJournals()
@@ -96,49 +103,75 @@ namespace WFViewListBooksJournals.Presenters.Infrastructure
             _newspaperRepository.Save();
         }
 
-        public void FillListBoxPublicationAuthor(Author author)
+        public void FillListBoxPublicationAuthor()
         {
             _mainForm.ClearListBoxMain();
-                        
-            var queryBooks = GetAllBooks(author);
-            if (queryBooks.Count() != (int)EnumPublications.Empty)
-            {                
+
+            var queryBooks = GetAllBooks(SelectedAuthor);
+            if (queryBooks.Count() != (int)SystemVariablesPublications.Empty)
+            {
                 _mainForm.FillListBoxMainBooks(Publications, queryBooks);
             }
 
-            var queryJournals = GetAllJournals(author);
-            if (queryJournals.Count() != (int)EnumPublications.Empty)
-            {               
+            var queryJournals = GetAllJournals(SelectedAuthor);
+            if (queryJournals.Count() != (int)SystemVariablesPublications.Empty)
+            {
                 _mainForm.FillListBoxMainJournals(Publications, queryJournals);
             }
 
-            var queryNewspapers = GetAllNewspapers(author);
-            if (queryNewspapers.Count() != (int)EnumPublications.Empty)
-            {                
+            var queryNewspapers = GetAllNewspapers(SelectedAuthor);
+            if (queryNewspapers.Count() != (int)SystemVariablesPublications.Empty)
+            {
                 _mainForm.FillListBoxMainNewspapers(Publications, queryNewspapers);
             }
         }
 
         private IEnumerable<Book> GetAllBooks(Author author)
         {
-            var queryBooks = _bookRepository.GetAll().Where(b => b.Authors.Where(a => a.FirstName == author.FirstName & a.SecondName == author.SecondName & a.LastName == author.LastName & a.Age == author.Age).Count() != 0);            
+            var queryBooks = _bookRepository.GetAll()
+                .Where(b => b.Authors
+                .Where(a =>
+                       a.FirstName == author.FirstName &
+                       a.SecondName == author.SecondName &
+                       a.LastName == author.LastName &
+                       a.Age == author.Age
+                        )
+                .Count() != 0);
 
             return queryBooks;
         }
 
         private IEnumerable<Journal> GetAllJournals(Author author)
         {
-            var queryJournals = _journalRepository.GetAll().Where(j => j.Articles.Where(ar => ar.Authors.Where(a => a.FirstName == author.FirstName & a.SecondName == author.SecondName & a.LastName == author.LastName & a.Age == author.Age).Count() != 0).Count() != 0);
+            var queryJournals = _journalRepository.GetAll()
+                .Where(j => j.Articles.Where(ar => ar.Authors
+                .Where(a =>
+                       a.FirstName == author.FirstName &
+                       a.SecondName == author.SecondName &
+                       a.LastName == author.LastName &
+                       a.Age == author.Age
+                       )
+                .Count() != 0)
+                .Count() != 0);
 
             return queryJournals;
         }
 
         private IEnumerable<Newspaper> GetAllNewspapers(Author author)
         {
-            var queryNewspapers = _newspaperRepository.GetAll().Where(j => j.Articles.Where(ar => ar.Authors.Where(a => a.FirstName == author.FirstName & a.SecondName == author.SecondName & a.LastName == author.LastName & a.Age == author.Age).Count() != 0).Count() != 0);
+            var queryNewspapers = _newspaperRepository.GetAll()
+                .Where(n => n.Articles
+                .Where(ar => ar.Authors
+                .Where(a => 
+                       a.FirstName == author.FirstName & 
+                       a.SecondName == author.SecondName & 
+                       a.LastName == author.LastName & 
+                       a.Age == author.Age
+                       )
+                .Count() != 0)
+                .Count() != 0);
 
             return queryNewspapers;
         }
-
     }
 }

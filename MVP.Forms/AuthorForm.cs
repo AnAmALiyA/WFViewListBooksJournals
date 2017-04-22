@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using WFViewListBooksJournals.Entities;
-using WFViewListBooksJournals.Presenters.Infrastructure;
+using WFViewListBooksJournals.Presenters;
 using WFViewListBooksJournals.Views.Interfaces;
-using WFViewListBooksJournals.Views.Servises;
+using WFViewListBooksJournals.Views.Common;
 
 namespace WFViewListBooksJournals.Forms
 {
     public partial class AuthorForm : Form, IAuthorForm
     {
-        private PresetnerAuthorForm _presetnerAuthorForm;
+        private AuthorFormPresenter _presetnerAuthorForm;
         private DisplayOfData _displayData;
         private IPublicationForm _publicationForm;
         private Validation _validation;
@@ -21,7 +21,7 @@ namespace WFViewListBooksJournals.Forms
         {
             InitializeComponent();
 
-            _presetnerAuthorForm = new PresetnerAuthorForm(this);
+            _presetnerAuthorForm = new AuthorFormPresenter(this);
             _displayData = DisplayOfData.Instance;
             _publicationForm = publicationForm;
             _validation = Validation.Instance;

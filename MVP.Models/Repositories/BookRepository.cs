@@ -4,22 +4,21 @@ using System.Linq;
 using System.Configuration;
 using WFViewListBooksJournals.Entities;
 using WFViewListBooksJournals.Models.Services;
-using System.Collections;
 
 namespace WFViewListBooksJournals.Models.Repositories
 {
     public class BookRepository
     {
         private static BookRepository _instance;
-        private DataBase _dataBase;
+        private MockDataProvider _dataBase;
         private readonly ADOContext _context;
         
 
         public BookRepository()
         {
-            _dataBase = DataBase.Instance;
+            _dataBase = MockDataProvider.Instance;
 
-            string connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString; //или занятся поиском в приложении
+            string connectionString = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
             _context = new ADOContext(connectionString);
         }
 
@@ -48,8 +47,8 @@ namespace WFViewListBooksJournals.Models.Repositories
             _context.DeleteBooksAuthors();
             _context.DeleteAuthors();
             _context.DeleteBooks();
-
-            _context.SaveBooks(_dataBase.Books);
+            
+            _context.SaveBooks(_dataBase.Books, _dataBase.Authors.Select(x=>x.Value).ToList());
         }
         
         public void Create(Author author, string namePublication, DateTime date, int pages)

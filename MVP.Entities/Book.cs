@@ -7,13 +7,13 @@ namespace WFViewListBooksJournals.Entities
     {
         public Book()
         {
-            Authors = new HashSet<Author>();
+            Authors = new List<Author>();
         }
         public int Id { get; set; }
         public string Name { get; set; }
         public DateTime Date {get; set;}
         public int Pages { get; set; }
 
-        public virtual ICollection<Author> Authors { get; set; }
+        public virtual List<Author> Authors { get; set; }
     }
 }

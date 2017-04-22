@@ -4,9 +4,9 @@ using WFViewListBooksJournals.Entities;
 using WFViewListBooksJournals.Models.Repositories;
 using WFViewListBooksJournals.Views.Interfaces;
 
-namespace WFViewListBooksJournals.Presenters.Infrastructure
+namespace WFViewListBooksJournals.Presenters
 {
-    public class PresetnerPublicationForm
+    public class PublicationFormPresenter
     {
         private IPublicationForm _publicationForm;
 
@@ -18,7 +18,7 @@ namespace WFViewListBooksJournals.Presenters.Infrastructure
 
         private enum EnumPublications { Book, Journal, Newspaper }
 
-        public PresetnerPublicationForm(IPublicationForm publicationForm, string publication)
+        public PublicationFormPresenter(IPublicationForm publicationForm, string publication)
         {
             _publicationForm = publicationForm;
             _publication = publication;
@@ -142,7 +142,5 @@ namespace WFViewListBooksJournals.Presenters.Infrastructure
         {
             _newspaperRepository.Delete(newspaper);
         }
-
-
     }
 }

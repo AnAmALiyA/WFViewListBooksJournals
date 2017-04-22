@@ -1,23 +1,21 @@
-﻿using System.Xml;
+﻿using System;
 using System.Collections.Generic;
-using WFViewListBooksJournals.Entities;
-using System.Linq;
-using System;
-using WFViewListBooksJournals.Models.Services;
 using System.IO;
+using System.Linq;
+using System.Xml.Serialization;
+using WFViewListBooksJournals.Entities;
+using WFViewListBooksJournals.Models.Services;
 
 namespace WFViewListBooksJournals.Models.Repositories
 {
     public class NewspaperRepository
     {
         private static NewspaperRepository _instance;
-        private DataBase _dataBase;
-        private AdditionalMethods _additionalMethods;
+        private MockDataProvider _dataBase;
 
         public NewspaperRepository()
         {
-            _dataBase = DataBase.Instance;
-            _additionalMethods = AdditionalMethods.Instance;
+            _dataBase = MockDataProvider.Instance;
         }
 
         public static NewspaperRepository Instance
@@ -60,47 +58,13 @@ namespace WFViewListBooksJournals.Models.Repositories
 
         private void CreateSaveFile(string fileXML)
         {
-            XmlTextWriter writer = new XmlTextWriter(fileXML, null)
+            List<Newspaper> newspapers = _dataBase.Newspapers;
+            
+            XmlSerializer serializer = new XmlSerializer(typeof(List<Newspaper>));            
+            using (StreamWriter streamWriter = new StreamWriter(fileXML))
             {
-                Formatting = Formatting.Indented,
-                IndentChar = '\t',
-                Indentation = 1,
-                QuoteChar = '\''
-            };
-
-            writer.WriteStartDocument();
-            writer.WriteStartElement("ListOfNewspaper");
-
-            foreach (Newspaper newspaper in _dataBase.Newspapers)
-            {
-                writer.WriteStartElement("Newspaper");
-                foreach (Article article in newspaper.Articles)
-                {
-                    writer.WriteStartElement("Article");
-                    writer.WriteStartElement("Author");
-
-                    string stringAuthors = _additionalMethods.GetStringAuthorList(article.Authors);
-
-                    writer.WriteString(stringAuthors);
-                    writer.WriteEndElement();
-                    writer.WriteStartElement("ArticleTitle");
-                    writer.WriteString(article.Title);
-                    writer.WriteEndElement();
-                    writer.WriteStartElement("LocationArticle");
-                    writer.WriteString(article.Location);
-                    writer.WriteEndElement();
-                    writer.WriteEndElement();
-                }
-                writer.WriteStartElement("NameNewspaper");
-                writer.WriteString(newspaper.Name);
-                writer.WriteEndElement();
-                writer.WriteStartElement("Date");
-                writer.WriteString(newspaper.Date.ToString("dd.MM.yyyy"));
-                writer.WriteEndElement();
-
-                writer.WriteEndElement();
+                serializer.Serialize(streamWriter, newspapers);
             }
-            writer.Close();
         }
         
         public void Create(Author selectedAuthor, string title, string location, string namePublication, DateTime date)
@@ -135,7 +99,7 @@ namespace WFViewListBooksJournals.Models.Repositories
             _dataBase.Newspapers = newspaperDB;
         }
 
-        private void UpdateArticle(Article selectedJournalArticle, Newspaper journal, Author selectedAuthor, HashSet<Newspaper> journalDB, string title, string location, string namePublication, DateTime date)
+        private void UpdateArticle(Article selectedJournalArticle, Newspaper journal, Author selectedAuthor, List<Newspaper> journalDB, string title, string location, string namePublication, DateTime date)
         {
             foreach (var article in journal.Articles)
             {
@@ -170,7 +134,7 @@ namespace WFViewListBooksJournals.Models.Repositories
             _dataBase.Newspapers = newspaperDB;
         }
 
-        private void DeleteArticle(Newspaper newspaper, Article articleDelete, HashSet<Newspaper> newspaperDB)
+        private void DeleteArticle(Newspaper newspaper, Article articleDelete, List<Newspaper> newspaperDB)
         {
             foreach (var article in newspaper.Articles)
             {

@@ -6,7 +6,7 @@ namespace WFViewListBooksJournals.Entities
     {
         public Author()
         {
-            Books = new HashSet<Book>();
+            Books = new List<Book>();
         }
         public int Id { get; set; }
         public string FirstName { get; set; }
@@ -14,7 +14,7 @@ namespace WFViewListBooksJournals.Entities
         public string LastName { get; set; }
         public int Age { get; set; }
         public bool InitialsOption { get; set; }
-
-        public virtual ICollection<Book> Books { get; set; }
+        
+        public virtual List<Book> Books { get; set; }
     }
 }

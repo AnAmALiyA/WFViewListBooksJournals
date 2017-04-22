@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using WFViewListBooksJournals.Entities;
 
-namespace WFViewListBooksJournals.Views.Servises
+namespace WFViewListBooksJournals.Views.Common
 {
     public class DisplayOfData
     {

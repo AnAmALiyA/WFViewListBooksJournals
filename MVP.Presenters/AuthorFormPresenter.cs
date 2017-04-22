@@ -3,15 +3,15 @@ using WFViewListBooksJournals.Entities;
 using WFViewListBooksJournals.Models.Repositories;
 using WFViewListBooksJournals.Views.Interfaces;
 
-namespace WFViewListBooksJournals.Presenters.Infrastructure
+namespace WFViewListBooksJournals.Presenters
 {
-    public class PresetnerAuthorForm
+    public class AuthorFormPresenter
     {
         private IAuthorForm _authorForm;
         private AuthorRepository _authorRepository;
         private Dictionary<string, bool> Nationality { get; set; }
 
-        public PresetnerAuthorForm(IAuthorForm authorForm)
+        public AuthorFormPresenter(IAuthorForm authorForm)
         {
             _authorForm = authorForm;
             _authorRepository = AuthorRepository.Instance;

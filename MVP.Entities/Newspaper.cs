@@ -7,12 +7,12 @@ namespace WFViewListBooksJournals.Entities
     {
         public Newspaper()
         {
-            Articles = new HashSet<Article>();
+            Articles = new List<Article>();
         }
         public int Id { get; set; }        
         public string Name { get; set; }
         public DateTime Date { get; set; }
 
-        public virtual ICollection<Article> Articles { get; set; }
+        public virtual List<Article> Articles { get; set; }
     }
 }

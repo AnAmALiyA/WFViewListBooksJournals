@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using WFViewListBooksJournals.Entities;
-using WFViewListBooksJournals.Presenters.Infrastructure;
+using WFViewListBooksJournals.Presenters;
+using WFViewListBooksJournals.Presenters.Common;
 using WFViewListBooksJournals.Views.Interfaces;
-using WFViewListBooksJournals.Views.Servises;
+using WFViewListBooksJournals.Views.Common;
 
 namespace WFViewListBooksJournals.Forms
 {
@@ -14,7 +15,7 @@ namespace WFViewListBooksJournals.Forms
         private readonly string _currentPublication;
         private DisplayOfData _displayData;
         private IMainForm _mainForm;
-        private PresetnerPublicationForm _presetnerPublication;
+        private PublicationFormPresenter _presetnerPublication;
         private Validation _validation;
 
         private Dictionary<string, string> PublicationText { get; set; }
@@ -24,7 +25,7 @@ namespace WFViewListBooksJournals.Forms
         private Dictionary<int, Journal> _journalListForIndex;
         private Dictionary<int, Newspaper> _newspaperListForIndex;
 
-        private enum EnumPublicationForm { NoSelectedIndex = -1, Book, Journal, Newspaper }
+        
         private int SelectedIndexPublication { get; set; }
 
         public PublicationForm(string publication, IMainForm mainForm)
@@ -35,7 +36,7 @@ namespace WFViewListBooksJournals.Forms
             _currentPublication = publication;
             _displayData = DisplayOfData.Instance;
             _mainForm = mainForm;
-            _presetnerPublication = new PresetnerPublicationForm(this, publication);
+            _presetnerPublication = new PublicationFormPresenter(this, publication);
             _validation = Validation.Instance;
 
             PublicationText = new Dictionary<string, string>();
@@ -45,7 +46,7 @@ namespace WFViewListBooksJournals.Forms
             SelectPublicationForm(publication);
             InitializeComponentPublicationForm();
 
-            SelectedIndexPublication = (int)EnumPublicationForm.NoSelectedIndex;
+            SelectedIndexPublication = (int)SystemVariablesPublications.NoSelectedIndex;
         }
 
         public void InitializeComponentPublicationForm()
@@ -55,21 +56,21 @@ namespace WFViewListBooksJournals.Forms
 
         private void SelectPublicationForm(string publication)
         {
-            if (EnumPublicationForm.Book.ToString() == _currentPublication)
+            if (PublicationsType.Book.ToString() == _currentPublication)
             {
                 AdjustDisplayBooks();
                 _bookListForIndex = new Dictionary<int, Book>();
                 return;
             }
 
-            if (EnumPublicationForm.Journal.ToString() == _currentPublication)
+            if (PublicationsType.Journal.ToString() == _currentPublication)
             {
                 AdjustDisplayJournals();
                 _journalListForIndex = new Dictionary<int, Journal>();
                 return;
             }
 
-            if (EnumPublicationForm.Newspaper.ToString() == _currentPublication)
+            if (PublicationsType.Newspaper.ToString() == _currentPublication)
             {
                 AdjustDisplayNewspapers();
                 _newspaperListForIndex = new Dictionary<int, Newspaper>();
@@ -158,7 +159,7 @@ namespace WFViewListBooksJournals.Forms
 
         private void listBoxPublicationForm_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            if (listBoxPublicationForm.SelectedIndex == default(int) || listBoxPublicationForm.SelectedIndex == (int)EnumPublicationForm.NoSelectedIndex)
+            if (listBoxPublicationForm.SelectedIndex == default(int) || listBoxPublicationForm.SelectedIndex == (int)SystemVariablesPublications.NoSelectedIndex)
             {
                 return;
             }
@@ -168,21 +169,21 @@ namespace WFViewListBooksJournals.Forms
 
         private void FillFieldsForm(int SelectedIndex)
         {
-            if (EnumPublicationForm.Book.ToString() == _currentPublication)
+            if (PublicationsType.Book.ToString() == _currentPublication)
             {
                 var selectedBook = _bookListForIndex[SelectedIndex];
                 FillFields(selectedBook);
                 return;
             }
 
-            if (EnumPublicationForm.Journal.ToString() == _currentPublication)
+            if (PublicationsType.Journal.ToString() == _currentPublication)
             {
                 var selectedJournal = _journalListForIndex[SelectedIndex];
                 FillFields(selectedJournal);
                 return;
             }
 
-            if (EnumPublicationForm.Newspaper.ToString() == _currentPublication)
+            if (PublicationsType.Newspaper.ToString() == _currentPublication)
             {
                 var selectedNewspaper = _newspaperListForIndex[SelectedIndex];
                 FillFields(selectedNewspaper);
@@ -244,7 +245,7 @@ namespace WFViewListBooksJournals.Forms
 
         private void ClearFields()
         {
-            comboBoxAuthor.SelectedIndex = (int)EnumPublicationForm.NoSelectedIndex;
+            comboBoxAuthor.SelectedIndex = (int)SystemVariablesPublications.NoSelectedIndex;
             textBoxName.Text = string.Empty;
             dateTimePickerDate.Value = DateTime.Now;
             textBoxPages.Text = string.Empty;
@@ -257,17 +258,17 @@ namespace WFViewListBooksJournals.Forms
             var selectedAuthor = _authorList[comboBoxAuthor.SelectedIndex];
             bool isAdd = false;
 
-            if (EnumPublicationForm.Book.ToString() == _currentPublication)
+            if (PublicationsType.Book.ToString() == _currentPublication)
             {
                 isAdd = buttonAdd_Click_Book(selectedAuthor);
             }
 
-            if (EnumPublicationForm.Journal.ToString() == _currentPublication)
+            if (PublicationsType.Journal.ToString() == _currentPublication)
             {
                 isAdd = buttonAdd_Click_Journal(selectedAuthor);
             }
 
-            if (EnumPublicationForm.Newspaper.ToString() == _currentPublication)
+            if (PublicationsType.Newspaper.ToString() == _currentPublication)
             {
                 isAdd = buttonAdd_Click_Newspaper(selectedAuthor);
             }
@@ -324,17 +325,17 @@ namespace WFViewListBooksJournals.Forms
             var selectedAuthor = _authorList[comboBoxAuthor.SelectedIndex];
             bool isAdd = false;
 
-            if (EnumPublicationForm.Book.ToString() == _currentPublication)
+            if (PublicationsType.Book.ToString() == _currentPublication)
             {
                 isAdd = buttonUpdate_Click_Book(selectedAuthor);
             }
 
-            if (EnumPublicationForm.Journal.ToString() == _currentPublication)
+            if (PublicationsType.Journal.ToString() == _currentPublication)
             {
                 isAdd = buttonUpdate_Click_Journal(selectedAuthor);
             }
 
-            if (EnumPublicationForm.Newspaper.ToString() == _currentPublication)
+            if (PublicationsType.Newspaper.ToString() == _currentPublication)
             {
                 isAdd = buttonUpdate_Click_Newspaper(selectedAuthor);
             }
@@ -388,22 +389,22 @@ namespace WFViewListBooksJournals.Forms
 
         private void buttonDelete_Click(object sender, EventArgs e)
         {
-            if (listBoxPublicationForm.SelectedIndex == default(int) || listBoxPublicationForm.SelectedIndex == (int)EnumPublicationForm.NoSelectedIndex)
+            if (listBoxPublicationForm.SelectedIndex == default(int) || listBoxPublicationForm.SelectedIndex == (int)SystemVariablesPublications.NoSelectedIndex)
             {
                 return;
             }
 
-            if (EnumPublicationForm.Book.ToString() == _currentPublication)
+            if (PublicationsType.Book.ToString() == _currentPublication)
             {
                 buttonDelete_Click_Book();
             }
 
-            if (EnumPublicationForm.Journal.ToString() == _currentPublication)
+            if (PublicationsType.Journal.ToString() == _currentPublication)
             {
                 buttonDelete_Click_Journal();
             }
 
-            if (EnumPublicationForm.Newspaper.ToString() == _currentPublication)
+            if (PublicationsType.Newspaper.ToString() == _currentPublication)
             {
                 buttonDelete_Click_Newspaper();
             }
@@ -414,7 +415,7 @@ namespace WFViewListBooksJournals.Forms
             var selectedBook = _bookListForIndex[SelectedIndexPublication];
             _presetnerPublication.Delete(selectedBook);
 
-            SelectedIndexPublication = (int)EnumPublicationForm.NoSelectedIndex;
+            SelectedIndexPublication = (int)SystemVariablesPublications.NoSelectedIndex;
             _presetnerPublication.FillListBoxPublication();
         }
 
@@ -423,7 +424,7 @@ namespace WFViewListBooksJournals.Forms
             var selectedJournal = _journalListForIndex[SelectedIndexPublication];
             _presetnerPublication.Delete(selectedJournal);
 
-            SelectedIndexPublication = (int)EnumPublicationForm.NoSelectedIndex;
+            SelectedIndexPublication = (int)SystemVariablesPublications.NoSelectedIndex;
             _presetnerPublication.FillListBoxPublication();
         }
 
@@ -432,7 +433,7 @@ namespace WFViewListBooksJournals.Forms
             var selectedNewspaper = _newspaperListForIndex[SelectedIndexPublication];
             _presetnerPublication.Delete(selectedNewspaper);
 
-            SelectedIndexPublication = (int)EnumPublicationForm.NoSelectedIndex;
+            SelectedIndexPublication = (int)SystemVariablesPublications.NoSelectedIndex;
             _presetnerPublication.FillListBoxPublication();
         }
 

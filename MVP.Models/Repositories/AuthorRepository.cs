@@ -7,7 +7,7 @@ namespace WFViewListBooksJournals.Models.Repositories
     public class AuthorRepository
     {
         private static AuthorRepository _instance;
-        private DataBase _dataBase;
+        private MockDataProvider _dataBase;
         
         public static AuthorRepository Instance
         {
@@ -23,7 +23,7 @@ namespace WFViewListBooksJournals.Models.Repositories
 
         private AuthorRepository()
         {
-            _dataBase = DataBase.Instance;
+            _dataBase = MockDataProvider.Instance;
         }
 
         public List<Author> GetAll()

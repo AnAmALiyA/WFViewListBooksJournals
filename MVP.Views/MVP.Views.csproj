@@ -45,8 +45,8 @@
     <Compile Include="Interfaces\IPublicationForm.cs" />
     <Compile Include="Interfaces\IMainForm.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Servises\DisplayOfData.cs" />
-    <Compile Include="Servises\Validation.cs" />
+    <Compile Include="Common\DisplayOfData.cs" />
+    <Compile Include="Common\Validation.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MVP.Entities\MVP.Entities.csproj">

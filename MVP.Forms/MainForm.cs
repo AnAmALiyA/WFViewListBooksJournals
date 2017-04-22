@@ -8,7 +8,6 @@ using WFViewListBooksJournals.Views.Interfaces;
 using WFViewListBooksJournals.Views.Common;
 using System.Collections;
 using WFViewListBooksJournals.Presenters.Common;
-//using static WFViewListBooksJournals.Presenters.MainFormPresenter;
 
 namespace WFViewListBooksJournals.Forms
 {

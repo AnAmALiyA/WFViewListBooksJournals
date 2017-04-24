@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Data.SqlClient;
 using WFViewListBooksJournals.Entities;
 using WFViewListBooksJournals.Models.Infrastructure;
@@ -54,37 +53,44 @@ namespace WFViewListBooksJournals.Models.Services
         
         public void SaveBooks(List<Book> books, List<Author> authors)
         {
-            Connection.Open();
             string sqlCommandString = string.Format(CommandString["SelectBooks"] + ";" + CommandString["SelectAuthors"] + ";" + CommandString["SelectAuthorsBooks"]);
             SqlDataAdapter adapter = new SqlDataAdapter(sqlCommandString, Connection);
-
             DataSet dataSet = new DataSet();
+
+            FillAdapter(adapter, dataSet);
+                        
+            DataTable authorsTable = dataSet.Tables[(int)SystemVariablesModel.AuthorsTable];
+            DataTable booksTable = dataSet.Tables[(int)SystemVariablesModel.BooksTable];
+
+            FillAuthorsDataTable(authors, authorsTable);
+            FillBooksDataTable(books, booksTable);
+
+            UpdateDataSet(adapter, dataSet);
+            
+            dataSet.Clear();
+            FillAdapter(adapter, dataSet);
+            
+            DataTable authorsBooksTable = dataSet.Tables[(int)SystemVariablesModel.AuthorsBooksTable];
+
+            InsertAuthorsBooks(books, authorsBooksTable, adapter, dataSet);            
+        }
+
+        private void FillAdapter(SqlDataAdapter adapter, DataSet dataSet)
+        {
+            Connection.Open();
             adapter.Fill(dataSet);
             Connection.Close();
+        }
 
-            DataTable booksTable = dataSet.Tables[(int)SystemVariablesModel.BooksTable];
-            DataTable authorsTable = dataSet.Tables[(int)SystemVariablesModel.AuthorsTable];
-            
-            SaveAuthors(authors, authorsTable);
-
+        private void UpdateDataSet(SqlDataAdapter adapter, DataSet dataSet)
+        {
             Connection.Open();
             SqlCommandBuilder commandBuilder = new SqlCommandBuilder(adapter);
             adapter.Update(dataSet);
-
-            dataSet.Clear();
-
-            adapter.Fill(dataSet);
-            Connection.Close();
-            
-            booksTable = dataSet.Tables[(int)SystemVariablesModel.BooksTable];
-            authorsTable = dataSet.Tables[(int)SystemVariablesModel.AuthorsTable];
-            DataTable authorsBooksTable = dataSet.Tables[(int)SystemVariablesModel.AuthorsBooksTable];
-
-            InsertAuthorsBooks(books, authorsBooksTable, adapter, dataSet);
             Connection.Close();
         }
-        
-        private void FillAuthorsBooksDataTable(List<Book> books, DataTable booksTable)
+
+        private void FillBooksDataTable(List<Book> books, DataTable booksTable)
         {
             foreach (Book book in books)
             {
@@ -121,11 +127,11 @@ namespace WFViewListBooksJournals.Models.Services
                     listAuthorId.Add(authorId);
                 }
 
-                FillAuthorsBooksDataTable(tableAuthorsBooks, bookId, listAuthorId, adapter, dataSet);
+                FillBooksDataTable(tableAuthorsBooks, bookId, listAuthorId, adapter, dataSet);
             }
         }
 
-        private void FillAuthorsBooksDataTable(DataTable tableAuthorsBooks, int bookId, List<int> listAuthorId, SqlDataAdapter adapter, DataSet dataSet)
+        private void FillBooksDataTable(DataTable tableAuthorsBooks, int bookId, List<int> listAuthorId, SqlDataAdapter adapter, DataSet dataSet)
         {
             DataRow newRow = tableAuthorsBooks.NewRow();
             foreach (int authorId in listAuthorId)
@@ -142,23 +148,12 @@ namespace WFViewListBooksJournals.Models.Services
             {
                 throw;
             }
-
-            Connection.Open();
-            adapter.Update(dataSet);
-            Connection.Close();
         }
 
-        private void SaveAuthors(List<Author> authors, DataTable tableAuthors)
+        private void FillAuthorsDataTable(List<Author> authors, DataTable tableAuthors)
         {
             foreach (Author author in authors)
             {
-                int index = FindAuthorId(author);
-
-                if (index != (int)SystemVariablesModel.NoExist)
-                {
-                    continue;
-                }
-
                 DataRow newRow = tableAuthors.NewRow();
                 newRow[TableFields["FirstName"]] = author.FirstName;
                 newRow[TableFields["SecondName"]] = author.SecondName;

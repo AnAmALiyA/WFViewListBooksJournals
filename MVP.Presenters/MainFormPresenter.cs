@@ -70,16 +70,11 @@ namespace WFViewListBooksJournals.Presenters
             try
             {
                 _mainForm.ClearListBoxMain();
-
-                var queryJournal = from journal in _journalRepository.GetAll()
-                                   from article in journal.Articles
-                                   select article;
-                
+                                
+                var queryJournal = _journalRepository.GetAll().SelectMany(j => j.Articles.Select(ar => ar)).ToList();
                 _mainForm.FillListBoxMain(queryJournal);
-
-                var queryNewspaper = from newpaper in _newspaperRepository.GetAll()
-                                     from article in newpaper.Articles
-                                     select article;
+                                
+                var queryNewspaper = _newspaperRepository.GetAll().SelectMany(n => n.Articles.Select(a => a)).ToList();
                 _mainForm.FillListBoxMain(queryNewspaper);
             }
             catch (Exception ex)

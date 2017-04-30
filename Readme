@@ -1,0 +1,5 @@
+Этот проект содержит методы для сохранения данных в .txt и .xml файл, а так же в MS SQL БД по средствам ADO.NET. 
+БД создаётся в памяти по умолчанию - MockDataProvider.
+
+This project contains methods for save data in a .txt and .xml file, as well as in an MS SQL database by means of ADO.NET.
+The database is created in memory by default - MockDataProvider.

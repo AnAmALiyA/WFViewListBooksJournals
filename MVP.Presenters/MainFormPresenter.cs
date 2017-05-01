@@ -102,19 +102,19 @@ namespace WFViewListBooksJournals.Presenters
         {
             _mainForm.ClearListBoxMain();
 
-            var queryBooks = GetAllBooks(SelectedAuthor);
+            var queryBooks = GetAllBookListByAuthor(SelectedAuthor);
             if (queryBooks.Count() != (int)SystemVariablesPublications.Empty)
             {
                 _mainForm.FillListBoxMainBooks(Publications, queryBooks);
             }
 
-            var queryJournals = GetAllJournals(SelectedAuthor);
+            var queryJournals = GetAllJournalListByAuthor(SelectedAuthor);
             if (queryJournals.Count() != (int)SystemVariablesPublications.Empty)
             {
                 _mainForm.FillListBoxMainJournals(Publications, queryJournals);
             }
 
-            var queryNewspapers = GetAllNewspapers(SelectedAuthor);
+            var queryNewspapers = GetAllNewspaperListByAuthor(SelectedAuthor);
             if (queryNewspapers.Count() != (int)SystemVariablesPublications.Empty)
             {
                 _mainForm.FillListBoxMainNewspapers(Publications, queryNewspapers);

@@ -121,7 +121,7 @@ namespace WFViewListBooksJournals.Presenters
             }
         }
 
-        private IEnumerable<Book> GetAllBooks(Author author)
+        private IEnumerable<Book> GetAllBookListByAuthor(Author author)
         {
             var queryBooks = _bookRepository.GetAll()
                 .Where(b => b.Authors
@@ -136,7 +136,7 @@ namespace WFViewListBooksJournals.Presenters
             return queryBooks;
         }
 
-        private IEnumerable<Journal> GetAllJournals(Author author)
+        private IEnumerable<Journal> GetAllJournalListByAuthor(Author author)
         {
             var queryJournals = _journalRepository.GetAll()
                 .Where(j => j.Articles.Where(ar => ar.Authors
@@ -152,7 +152,7 @@ namespace WFViewListBooksJournals.Presenters
             return queryJournals;
         }
 
-        private IEnumerable<Newspaper> GetAllNewspapers(Author author)
+        private IEnumerable<Newspaper> GetAllNewspaperListByAuthor(Author author)
         {
             var queryNewspapers = _newspaperRepository.GetAll()
                 .Where(n => n.Articles
